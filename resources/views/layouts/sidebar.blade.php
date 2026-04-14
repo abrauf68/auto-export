@@ -28,17 +28,24 @@
         <li class="menu-header small">
             <span class="menu-header-text">{{__('Apps & Pages')}}</span>
         </li>
-        @canany(['view user', 'view archived user'])
-            <li class="menu-item {{ request()->routeIs('dashboard.user.*') || request()->routeIs('dashboard.archived-user.*') ? 'open' : '' }}">
+        @canany(['view user', 'view archived user', 'view staff'])
+            <li class="menu-item {{ request()->routeIs('dashboard.user.*') || request()->routeIs('dashboard.archived-user.*') || request()->routeIs('dashboard.other-users.*') ? 'open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                     <i class="menu-icon tf-icons ti ti-users"></i>
                     <div>{{__('Users')}}</div>
                 </a>
                 <ul class="menu-sub">
                     @can(['view user'])
+                        <li class="menu-item {{ request()->routeIs('dashboard.other-users.*') ? 'active' : '' }}">
+                            <a href="{{route('dashboard.other-users.index')}}" class="menu-link">
+                                <div>{{__('Users')}}</div>
+                            </a>
+                        </li>
+                    @endcan
+                    @can(['view staff'])
                         <li class="menu-item {{ request()->routeIs('dashboard.user.*') ? 'active' : '' }}">
                             <a href="{{route('dashboard.user.index')}}" class="menu-link">
-                                <div>{{__('All Users')}}</div>
+                                <div>{{__('Staff')}}</div>
                             </a>
                         </li>
                     @endcan

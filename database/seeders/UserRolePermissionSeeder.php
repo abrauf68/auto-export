@@ -32,6 +32,11 @@ class UserRolePermissionSeeder extends Seeder
         Permission::create(['name' => 'update user']);
         Permission::create(['name' => 'delete user']);
 
+        Permission::create(['name' => 'view staff']);
+        Permission::create(['name' => 'create staff']);
+        Permission::create(['name' => 'update staff']);
+        Permission::create(['name' => 'delete staff']);
+
         Permission::create(['name' => 'view archived user']);
         Permission::create(['name' => 'create archived user']);
         Permission::create(['name' => 'update archived user']);

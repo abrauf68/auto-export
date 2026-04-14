@@ -25,9 +25,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        $this->authorize('view user');
+        $this->authorize('view staff');
         try {
-            $users  = User::with('profile')->get();
+            $users = User::with('profile')->withoutRole('user')->get();
             $totalUsers = User::count();
             $totalDeactivatedUsers = User::where('is_active', 'inactive')->count();
             $totalActiveUsers = User::where('is_active', 'active')->count();
@@ -56,7 +56,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create user');
+        $this->authorize('create staff');
         $validate = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -131,7 +131,7 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        if (!Gate::any(['update user', 'view user'])) {
+        if (!Gate::any(['update staff', 'view staff'])) {
             abort(403, 'Unauthorized');
         }
         try {
@@ -183,7 +183,7 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->authorize('update user');
+        $this->authorize('update staff');
         $validate = Validator::make($request->all(), [
             'edit_first_name' => 'required|string|max:255',
             'edit_last_name' => 'required|string|max:255',
@@ -224,7 +224,7 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->authorize('delete user');
+        $this->authorize('delete staff');
         try {
             $user = User::findOrFail($id);
             $user->delete();
@@ -240,7 +240,7 @@ class UserController extends Controller
      */
     public function updateStatus(string $id)
     {
-        $this->authorize('update user');
+        $this->authorize('update staff');
         try {
             $user = User::findOrFail($id);
             $message = $user->is_active == 'active' ? 'Account Deactivated Successfully' : 'Account Activated Successfully';

@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', __('Users'))
+@section('title', __('Staff Users'))
 
 @section('css')
     <style>
@@ -23,9 +23,8 @@
 
 
 @section('breadcrumb-items')
-    <li class="breadcrumb-item active">{{ __('Users') }}</li>
+    <li class="breadcrumb-item active">{{ __('Staff Users') }}</li>
 @endsection
-{{-- @dd($totalArchivedUsers) --}}
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row g-6 mb-6">
@@ -115,10 +114,10 @@
         <!-- Users List Table -->
         <div class="card">
             <div class="card-header">
-                @canany(['create user'])
+                @canany(['create staff'])
                     <button class="add-new btn btn-primary waves-effect waves-light" data-bs-toggle="offcanvas"
                         data-bs-target="#offcanvasAddUser">
-                        <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">{{ __('Add New User') }}</span>
+                        <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">{{ __('Add New Staff') }}</span>
                     </button>
                 @endcan
             </div>
@@ -133,7 +132,7 @@
                             <th>{{ __('Role') }}</th>
                             <th>{{ __('Created Date') }}</th>
                             <th>{{ __('Status') }}</th>
-                            @canany(['delete user', 'update user', 'view user'])<th>{{ __('Action') }}</th>@endcan
+                            @canany(['delete staff', 'update staff', 'view staff'])<th>{{ __('Action') }}</th>@endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -149,9 +148,9 @@
                                     <span
                                         class="badge me-4 bg-label-{{ $user->is_active == 'active' ? 'success' : 'danger' }}">{{ ucfirst($user->is_active) }}</span>
                                 </td>
-                                @canany(['delete user', 'update user', 'view user'])
+                                @canany(['delete staff', 'update staff', 'view staff'])
                                     <td class="d-flex">
-                                        @canany(['delete user'])
+                                        @canany(['delete staff'])
                                             @if (!($user->getRoleNames()->first() == 'admin' || $user->getRoleNames()->first() == 'super-admin'))
                                                 <form action="{{ route('dashboard.user.destroy', $user->id) }}" method="POST">
                                                     @method('DELETE')
@@ -164,7 +163,7 @@
                                                 </form>
                                             @endif
                                         @endcan
-                                        @canany(['update user'])
+                                        @canany(['update staff'])
                                             <span class="text-nowrap">
                                                 <button
                                                     class="btn btn-icon btn-text-primary waves-effect waves-light rounded-pill me-1"
@@ -186,7 +185,7 @@
                                                 </a>
                                             </span>
                                         @endcan
-                                        @can(['view user'])
+                                        @can(['view staff'])
                                             <button class="btn btn-icon btn-text-warning waves-effect waves-light rounded-pill me-1"
                                                 data-bs-toggle="modal" data-bs-target="#modalCenter"
                                                 data-user-id="{{ $user->id }}">
