@@ -18,7 +18,7 @@ class SettingSeeder extends Seeder
     public function run(): void
     {
         CompanySetting::create([
-            'company_name' => 'Auto Export',
+            'company_name' => 'BA Enterprises',
         ]);
 
         RecaptchaSetting::create([
