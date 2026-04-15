@@ -5,15 +5,22 @@ use App\Http\Controllers\Auth\GithubController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Dashboard\AlterationController;
 use App\Http\Controllers\Dashboard\HomeController;
+use App\Http\Controllers\Dashboard\InvoiceController;
 use App\Http\Controllers\Dashboard\NotificationController;
 use App\Http\Controllers\Dashboard\OtherUserController;
+use App\Http\Controllers\Dashboard\PaymentController;
+use App\Http\Controllers\Dashboard\PermitController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\RolePermission\PermissionController;
 use App\Http\Controllers\Dashboard\RolePermission\RoleController;
 use App\Http\Controllers\Dashboard\SettingController;
+use App\Http\Controllers\Dashboard\TransferController;
 use App\Http\Controllers\Dashboard\User\ArchivedUserController;
 use App\Http\Controllers\Dashboard\User\UserController;
+use App\Http\Controllers\Dashboard\VehicleController;
+use App\Http\Controllers\Dashboard\VehicleExportController;
 use App\Http\Middleware\CheckAccountActivation;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -140,7 +147,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('other-users', OtherUserController::class);
             Route::get('other-users/status/{id}', [OtherUserController::class, 'updateStatus'])->name('other-users.status.update');
 
+            Route::resource('vehicles', VehicleController::class);
 
+            Route::resource('transfers', TransferController::class);
+
+            Route::resource('alterations', AlterationController::class);
+
+            Route::resource('permits', PermitController::class);
 
         });
     });

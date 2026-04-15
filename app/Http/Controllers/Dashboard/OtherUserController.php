@@ -54,6 +54,7 @@ class OtherUserController extends Controller
             'father_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:other_users,email',
             'phone' => 'nullable|string|max:20|unique:other_users,phone',
+            'cnic' => 'nullable|string|max:255',
             'company' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
             'address' => 'nullable|string',
@@ -70,6 +71,7 @@ class OtherUserController extends Controller
             $user->father_name = $request->father_name;
             $user->email = $request->email;
             $user->phone = $request->phone;
+            $user->cnic = $request->cnic;
             $user->company = $request->company;
             $user->country = $request->country;
             $user->address = $request->address;
@@ -120,6 +122,7 @@ class OtherUserController extends Controller
             'father_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:other_users,email,' . $id,
             'phone' => 'nullable|string|max:20|unique:other_users,phone,' . $id,
+            'cnic' => 'nullable|string|max:255',
             'company' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
             'address' => 'nullable|string',
@@ -136,6 +139,7 @@ class OtherUserController extends Controller
             $user->father_name = $request->father_name;
             $user->email = $request->email;
             $user->phone = $request->phone;
+            $user->cnic = $request->cnic;
             $user->company = $request->company;
             $user->country = $request->country;
             $user->address = $request->address;
@@ -175,7 +179,7 @@ class OtherUserController extends Controller
             $message = $user->is_active == 'active' ? 'User Deactivated Successfully' : 'User Activated Successfully';
             if ($user->is_active == 'active') {
                 $user->is_active = 'inactive';
-                $user       ->save();
+                $user->save();
             } else {
                 $user->is_active = 'active';
                 $user->save();

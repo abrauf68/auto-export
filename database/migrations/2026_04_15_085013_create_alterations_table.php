@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vehicle_exports', function (Blueprint $table) {
+        Schema::create('alterations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained('other_users')->cascadeOnDelete();
             $table->foreignId('vehicle_id')->constrained('vehicles')->cascadeOnDelete();
-            $table->foreignId('transfer_user_id')->constrained('other_users')->cascadeOnDelete();
-            $table->string('export_date')->nullable();
-            $table->string('export_port')->nullable();
+            $table->foreignId('from_user_id')->constrained('other_users')->cascadeOnDelete();
+            $table->foreignId('to_user_id')->constrained('other_users')->cascadeOnDelete();
+            $table->string('type');
+            $table->date('alteration_date')->default(now());
+            $table->text('alteration_details')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
         });
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vehicle_exports');
+        Schema::dropIfExists('alterations');
     }
 };

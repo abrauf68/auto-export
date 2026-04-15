@@ -28,6 +28,46 @@
         <li class="menu-header small">
             <span class="menu-header-text">{{__('Apps & Pages')}}</span>
         </li>
+        @can(['view vehicle'])
+            <li class="menu-item {{ request()->routeIs('dashboard.vehicles.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.vehicles.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-car"></i>
+                    <div>{{__('Vehicles')}}</div>
+                </a>
+            </li>
+        @endcan
+        @can(['view transfer'])
+            <li class="menu-item {{ request()->routeIs('dashboard.transfers.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.transfers.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-arrows-exchange"></i>
+                    <div>{{__('Transfers')}}</div>
+                </a>
+            </li>
+        @endcan
+        @can(['view alteration'])
+            <li class="menu-item {{ request()->routeIs('dashboard.alterations.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.alterations.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-edit"></i>
+                    <div>{{__('Alterations')}}</div>
+                </a>
+            </li>
+        @endcan
+        @can(['view permit'])
+            <li class="menu-item {{ request()->routeIs('dashboard.permits.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.permits.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-edit"></i>
+                    <div>{{__('Permits')}}</div>
+                </a>
+            </li>
+        @endcan
+        {{-- @can(['view invoice'])
+            <li class="menu-item {{ request()->routeIs('dashboard.invoices.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.invoices.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-receipt"></i>
+                    <div>{{__('Invoices')}}</div>
+                </a>
+            </li>
+        @endcan --}}
         @canany(['view user', 'view archived user', 'view staff'])
             <li class="menu-item {{ request()->routeIs('dashboard.user.*') || request()->routeIs('dashboard.archived-user.*') || request()->routeIs('dashboard.other-users.*') ? 'open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">

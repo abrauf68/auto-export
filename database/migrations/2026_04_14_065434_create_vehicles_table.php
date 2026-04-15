@@ -14,13 +14,17 @@ return new class extends Migration
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
             $table->string('vehicle_name');
+            $table->string('reg_no')->unique();
             $table->string('make')->nullable();
             $table->string('model')->nullable();
             $table->string('year')->nullable();
             $table->string('color')->nullable();
-            $table->string('weight')->nullable();
             $table->string('chesis_number')->nullable();
             $table->string('engine_number')->nullable();
+            $table->string('wheel')->nullable();
+            $table->string('weight')->nullable();
+            $table->text('tax_history')->nullable();
+            $table->text('penalties')->nullable();
             $table->enum('is_active', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });

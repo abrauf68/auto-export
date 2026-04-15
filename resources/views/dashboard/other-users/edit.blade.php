@@ -66,6 +66,16 @@
                             @enderror
                         </div>
                         <div class="mb-4 col-md-6">
+                            <label for="cnic" class="form-label">{{ __('CNIC (optional)') }}</label>
+                            <input class="form-control @error('cnic') is-invalid @enderror" type="text" id="cnic"
+                                name="cnic" placeholder="{{ __('00000-0000000-0') }}" value="{{ old('cnic', $user->cnic) }}" />
+                            @error('cnic')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                        <div class="mb-4 col-md-6">
                             <label for="company" class="form-label">{{ __('Company (optional)') }}</label>
                             <input class="form-control @error('company') is-invalid @enderror" type="text" id="company"
                                 name="company" placeholder="{{ __('Enter company') }}" value="{{ old('company', $user->company) }}" />

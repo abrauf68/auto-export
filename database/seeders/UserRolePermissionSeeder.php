@@ -47,6 +47,31 @@ class UserRolePermissionSeeder extends Seeder
         Permission::create(['name' => 'update setting']);
         Permission::create(['name' => 'delete setting']);
 
+        Permission::create(['name' => 'view vehicle']);
+        Permission::create(['name' => 'create vehicle']);
+        Permission::create(['name' => 'update vehicle']);
+        Permission::create(['name' => 'delete vehicle']);
+
+        Permission::create(['name' => 'view transfer']);
+        Permission::create(['name' => 'create transfer']);
+        Permission::create(['name' => 'update transfer']);
+        Permission::create(['name' => 'delete transfer']);
+
+        Permission::create(['name' => 'view alteration']);
+        Permission::create(['name' => 'create alteration']);
+        Permission::create(['name' => 'update alteration']);
+        Permission::create(['name' => 'delete alteration']);
+
+        Permission::create(['name' => 'view permit']);
+        Permission::create(['name' => 'create permit']);
+        Permission::create(['name' => 'update permit']);
+        Permission::create(['name' => 'delete permit']);
+
+        Permission::create(['name' => 'view invoice']);
+        Permission::create(['name' => 'create invoice']);
+        Permission::create(['name' => 'update invoice']);
+        Permission::create(['name' => 'delete invoice']);
+
 
         // Create Roles
         $superAdminRole = Role::create(['name' => 'super-admin']); //as super-admin
