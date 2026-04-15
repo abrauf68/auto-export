@@ -55,7 +55,7 @@
         @can(['view permit'])
             <li class="menu-item {{ request()->routeIs('dashboard.permits.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.permits.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-edit"></i>
+                    <i class="menu-icon tf-icons ti ti-license"></i>
                     <div>{{__('Permits')}}</div>
                 </a>
             </li>
