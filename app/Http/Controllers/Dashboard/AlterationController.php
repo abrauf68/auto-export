@@ -18,15 +18,7 @@ class AlterationController extends Controller
      */
     public function index()
     {
-        $this->authorize('view alteration');
-        try {
-            $alterations = Alteration::with('fromUser', 'toUser', 'vehicle')->get();
-            return view('dashboard.alterations.index', compact('alterations'));
-        } catch (\Throwable $th) {
-            // throw $th;
-            Log::error("Alteration Index Failed:" . $th->getMessage());
-            return redirect()->back()->with('error', "Something went wrong! Please try again later");
-        }
+        return view('dashboard.coming-soon');
     }
 
     /**

@@ -18,15 +18,7 @@ class PermitController extends Controller
      */
     public function index()
     {
-        $this->authorize('view permit');
-        try {
-            $permits = Permit::with('permitHolder', 'vehicle')->get();
-            return view('dashboard.permits.index', compact('permits'));
-        } catch (\Throwable $th) {
-            // throw $th;
-            Log::error("Permit Index Failed:" . $th->getMessage());
-            return redirect()->back()->with('error', "Something went wrong! Please try again later");
-        }
+        return view('dashboard.coming-soon');
     }
 
     /**

@@ -1,80 +1,79 @@
 @extends('layouts.master')
 
-@section('title', __('Transfers'))
+@section('title', __('Cases'))
 
 @section('css')
 @endsection
 
 
 @section('breadcrumb-items')
-    <li class="breadcrumb-item active">{{ __('Transfers') }}</li>
+    <li class="breadcrumb-item active">{{ __('Cases') }}</li>
 @endsection
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
-        <!-- Transfers List Table -->
+        <!-- Cases List Table -->
         <div class="card">
-            {{-- <div class="card-header">
-                @canany(['create transfer'])
-                    <a href="{{route('dashboard.transfers.create')}}" class="add-new btn btn-primary waves-effect waves-light">
+            <div class="card-header">
+                @canany(['create case'])
+                    <a href="{{route('dashboard.cases.create')}}" class="add-new btn btn-primary waves-effect waves-light">
                         <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span
-                            class="d-none d-sm-inline-block">{{ __('Add New Transfer') }}</span>
+                            class="d-none d-sm-inline-block">{{ __('Add New Case') }}</span>
                     </a>
                 @endcan
-            </div> --}}
+            </div>
             <div class="card-datatable table-responsive">
                 <table class="datatables-users table border-top custom-datatables">
                     <thead>
                         <tr>
                             <th>{{ __('Sr.') }}</th>
                             <th>{{ __('Case No') }}</th>
-                            <th>{{ __('From') }}</th>
-                            <th>{{ __('To') }}</th>
-                            <th>{{ __('Engine No') }}</th>
-                            <th>{{ __('Chasis No') }}</th>
-                            @canany(['delete transfer', 'update transfer', 'view transfer'])<th>{{ __('Action') }}</th>@endcan
+                            <th>{{ __('Reg. No.') }}</th>
+                            <th>{{ __('Submitted By') }}</th>
+                            <th>{{ __('Case Refer To') }}</th>
+                            <th>{{ __('Work Type') }}</th>
+                            @canany(['delete case', 'update case', 'view case'])<th>{{ __('Action') }}</th>@endcan
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($transfers as $index => $transfer)
+                        @foreach ($cases as $index => $case)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>#{{ $transfer->vehicleCase->case_no }}</td>
-                                <td>{{ $transfer->from_name }}</td>
-                                <td>{{ $transfer->to_name }}</td>
-                                <td>{{ $transfer->engine_no }}</td>
-                                <td>{{ $transfer->chassis_no }}</td>
-
-                                @canany(['delete transfer', 'update transfer', 'view transfer'])
+                                <td>{{ $case->case_no }}</td>
+                                <td>{{ $case->vehicle_reg_no }}</td>
+                                <td>{{ $case->submitted_by }}</td>
+                                <td>{{ ucfirst($case->case_refer_to) }}</td>
+                                <td>{{ ucfirst($case->work_type) }}</td>
+                                @canany(['delete case', 'update case', 'view case'])
                                     <td class="d-flex">
-                                        @canany(['delete transfer'])
-                                            <form action="{{ route('dashboard.transfers.destroy', $transfer->id) }}" method="POST">
+                                        @canany(['delete case'])
+                                            <form action="{{ route('dashboard.cases.destroy', $case->id) }}" method="POST">
                                                 @method('DELETE')
                                                 @csrf
                                                 <a href="#" type="submit"
                                                     class="btn btn-icon btn-text-danger waves-effect waves-light rounded-pill delete-record delete_confirmation"
                                                     data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="{{ __('Delete Transfer') }}">
+                                                    title="{{ __('Delete Case') }}">
                                                     <i class="ti ti-trash ti-md"></i>
                                                 </a>
                                             </form>
                                         @endcan
-                                        @canany(['update transfer'])
+                                        @canany(['update case'])
                                             <span class="text-nowrap">
-                                                <a href="{{ route('dashboard.transfers.edit', $transfer->id) }}"
+                                                <a href="{{ route('dashboard.cases.edit', $case->id) }}"
                                                     class="btn btn-icon btn-text-primary waves-effect waves-light rounded-pill me-1"
                                                     data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="{{ __('Edit Transfer') }}">
+                                                    title="{{ __('Edit Case') }}">
                                                     <i class="ti ti-edit ti-md"></i>
                                                 </a>
                                             </span>
                                         @endcan
-                                        @canany(['view transfer'])
+                                        @canany(['view case'])
                                             <span class="text-nowrap">
-                                                <a href="{{ route('dashboard.transfers.show', $transfer->id) }}"
+                                                <a href="{{ route('dashboard.cases.show', $case->id) }}"
                                                     class="btn btn-icon btn-text-info waves-effect waves-light rounded-pill me-1"
                                                     data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="{{ __('View Transfer') }}">
-                                                    <i class="ti ti-receipt ti-md"></i>
+                                                    title="{{ __('View Case') }}">
+                                                    <i class="ti ti-eye ti-md"></i>
                                                 </a>
                                             </span>
                                         @endcan

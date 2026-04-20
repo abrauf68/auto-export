@@ -15,291 +15,105 @@
         <div class="card mb-6">
             <!-- Account -->
             <div class="card-body pt-4">
-                <form method="POST" action="{{ route('dashboard.transfers.update', $transfer->id) }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('dashboard.transfers.update', $transfer->id) }}"
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
                     <div class="row p-5">
-                        <h3>{{ __('Edit Transfer') }}</h3>
-                        <div class="mb-4 col-md-12">
-                            <label for="type" class="form-label">{{ __('Transfer Type') }}</label><span
-                                class="text-danger">*</span>
-                            <select class="form-control select2 @error('type') is-invalid @enderror" id="type"
-                                name="type" required>
-                                <option value="" selected disabled>{{ __('Select Transfer Type') }}</option>
-                                <option value="karachi" {{ old('type', $transfer->type) == 'karachi' ? 'selected' : '' }}>
-                                    {{ __('Karachi') }}
-                                </option>
-                                <option value="lasbella" {{ old('type', $transfer->type) == 'lasbella' ? 'selected' : '' }}>
-                                    {{ __('Lasbella') }}
-                                </option>
-                                <option value="peshawar" {{ old('type', $transfer->type) == 'peshawar' ? 'selected' : '' }}>
-                                    {{ __('Peshawar') }}
-                                </option>
-                                <option value="gilgit" {{ old('type', $transfer->type) == 'gilgit' ? 'selected' : '' }}>
-                                    {{ __('Gilgit') }}
-                                </option>
-                                <option value="other" {{ old('type', $transfer->type) == 'other' ? 'selected' : '' }}>
-                                    {{ __('Other') }}
-                                </option>
-                            </select>
-                            @error('type')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="mb-4 col-md-12">
-                            <label for="vehicle_id" class="form-label">{{ __('Vehicle') }}</label><span
-                                class="text-danger">*</span>
-                            <select class="form-control select2 @error('vehicle_id') is-invalid @enderror" id="vehicle_id"
-                                name="vehicle_id" required>
-                                <option value="" selected disabled>{{ __('Select Vehicle') }}</option>
-                                @foreach ($vehicles as $vehicle)
-                                    <option value="{{ $vehicle->id }}"
-                                        {{ old('vehicle_id', $transfer->vehicle_id) == $vehicle->id ? 'selected' : '' }}>
-                                        {{ $vehicle->vehicle_name . ' - ' . $vehicle->reg_no }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('vehicle_id')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="mb-4 col-md-12">
-                            <label for="transfer_date" class="form-label">{{ __('Transfer Date') }}</label><span
-                                class="text-danger">*</span>
-                            <input class="form-control @error('transfer_date') is-invalid @enderror" type="date"
-                                id="transfer_date" name="transfer_date" required
-                                placeholder="{{ __('Enter transfer date') }}" value="{{ old('transfer_date', $transfer->transfer_date) }}" />
-                            @error('transfer_date')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="mb-4 col-md-12">
-                            <label for="notes" class="form-label">{{ __('Notes (optional)') }}</label>
-                            <textarea class="form-control @error('notes') is-invalid @enderror" id="notes" name="notes"
-                                placeholder="{{ __('Enter notes...') }}">{{ old('notes', $transfer->notes) }}</textarea>
-                            @error('notes')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                        <h6>{{ __('From User Details') }}</h6>
-                        <hr>
+                        <h3>Edit Transfer</h3>
 
-                        <div class="mb-3 col-md-12">
-                            <input type="checkbox" id="from_new_user">
-                            <label for="from_new_user">Add New User</label>
+                        {{-- FROM DETAILS --}}
+                        <div class="col-md-4 mb-3">
+                            <label>From Name *</label>
+                            <input type="text" name="from_name" class="form-control"
+                                value="{{ old('from_name', $transfer->from_name) }}" required>
                         </div>
 
-                        <div id="from_user_select" class="mb-4 col-md-12">
-                            <select class="form-control select2" name="from_user_id">
-                                <option value="" selected disabled>Select User</option>
-                                @foreach ($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('from_user_id', $transfer->from_user_id) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                                @endforeach
+                        <div class="col-md-4 mb-3">
+                            <label>From S/O *</label>
+                            <input type="text" name="from_s_o" class="form-control"
+                                value="{{ old('from_s_o', $transfer->from_s_o) }}" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label>From NIC *</label>
+                            <input type="text" name="from_nic" class="form-control"
+                                value="{{ old('from_nic', $transfer->from_nic) }}" required>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>From Biometric *</label>
+                            <select name="from_biometric" class="form-control" required>
+                                <option value="yes"
+                                    {{ old('from_biometric', $transfer->from_biometric) == 'yes' ? 'selected' : '' }}>Yes
+                                </option>
+                                <option value="no"
+                                    {{ old('from_biometric', $transfer->from_biometric) == 'no' ? 'selected' : '' }}>No
+                                </option>
                             </select>
                         </div>
 
-                        <div id="from_new_user_fields" class="col-md-12" style="display:none;">
-                            <div class="row p-5">
-                                <div class="mb-4 col-md-6">
-                                    <label for="from_name" class="form-label">{{ __('Name') }}</label><span
-                                        class="text-danger">*</span>
-                                    <input class="form-control @error('from_name') is-invalid @enderror" type="text" id="from_name"
-                                        name="from_name" placeholder="{{ __('Enter name') }}"
-                                        value="{{ old('from_name') }}" />
-                                    @error('from_name')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="from_father_name" class="form-label">{{ __('Father Name') }}</label><span
-                                        class="text-danger">*</span>
-                                    <input class="form-control @error('from_father_name') is-invalid @enderror" type="text" id="from_father_name"
-                                        name="from_father_name" placeholder="{{ __('Enter father name') }}"
-                                        value="{{ old('from_father_name') }}" />
-                                    @error('from_father_name')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="from_email" class="form-label">{{ __('Email (optional)') }}</label>
-                                    <input class="form-control @error('from_email') is-invalid @enderror" type="email" id="from_email"
-                                        name="from_email" placeholder="{{ __('Enter email') }}" value="{{ old('from_email') }}" />
-                                    @error('from_email')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="from_phone" class="form-label">{{ __('Phone (optional)') }}</label>
-                                    <input class="form-control @error('from_phone') is-invalid @enderror" type="text" id="from_phone"
-                                        name="from_phone" placeholder="{{ __('Enter phone') }}" value="{{ old('from_phone') }}" />
-                                    @error('from_phone')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="from_cnic" class="form-label">{{ __('CNIC (optional)') }}</label>
-                                    <input class="form-control @error('from_cnic') is-invalid @enderror" type="text" id="from_cnic"
-                                        name="from_cnic" placeholder="{{ __('00000-0000000-0') }}" value="{{ old('from_cnic') }}" />
-                                    @error('from_cnic')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="from_company" class="form-label">{{ __('Company (optional)') }}</label>
-                                    <input class="form-control @error('from_company') is-invalid @enderror" type="text" id="from_company"
-                                        name="from_company" placeholder="{{ __('Enter company') }}" value="{{ old('from_company') }}" />
-                                    @error('from_company')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="from_country" class="form-label">{{ __('Country (optional)') }}</label>
-                                    <input class="form-control @error('from_country') is-invalid @enderror" type="text" id="from_country"
-                                        name="from_country" placeholder="{{ __('Enter country') }}" value="{{ old('from_country') }}" />
-                                    @error('from_country')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-12">
-                                    <label for="from_address" class="form-label">{{ __('Address (optional)') }}</label>
-                                    <input class="form-control @error('from_address') is-invalid @enderror" type="text" id="from_address"
-                                        name="from_address" placeholder="{{ __('Enter address') }}" value="{{ old('from_address') }}" />
-                                    @error('from_address')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
+                        {{-- TO DETAILS --}}
+                        <div class="col-md-4 mb-3">
+                            <label>To Name *</label>
+                            <input type="text" name="to_name" class="form-control"
+                                value="{{ old('to_name', $transfer->to_name) }}" required>
                         </div>
 
-                        <h6>{{ __('To User Details') }}</h6>
-                        <hr>
-
-                        <div class="mb-3 col-md-12">
-                            <input type="checkbox" id="to_new_user">
-                            <label for="to_new_user">Add New User</label>
+                        <div class="col-md-4 mb-3">
+                            <label>To S/O *</label>
+                            <input type="text" name="to_s_o" class="form-control"
+                                value="{{ old('to_s_o', $transfer->to_s_o) }}" required>
                         </div>
 
-                        <div id="to_user_select" class="mb-4 col-md-12">
-                            <select class="form-control select2" name="to_user_id">
-                                <option value="">Select User</option>
-                                @foreach ($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('to_user_id', $transfer->to_user_id) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                                @endforeach
+                        <div class="col-md-4 mb-3">
+                            <label>To NIC *</label>
+                            <input type="text" name="to_nic" class="form-control"
+                                value="{{ old('to_nic', $transfer->to_nic) }}" required>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>To Biometric *</label>
+                            <select name="to_biometric" class="form-control" required>
+                                <option value="yes"
+                                    {{ old('to_biometric', $transfer->to_biometric) == 'yes' ? 'selected' : '' }}>Yes
+                                </option>
+                                <option value="no"
+                                    {{ old('to_biometric', $transfer->to_biometric) == 'no' ? 'selected' : '' }}>No
+                                </option>
                             </select>
                         </div>
 
-                        <div id="to_new_user_fields" style="display:none;" class="col-md-12">
-                            <div class="row p-5">
-                                <div class="mb-4 col-md-6">
-                                    <label for="to_name" class="form-label">{{ __('Name') }}</label><span
-                                        class="text-danger">*</span>
-                                    <input class="form-control @error('to_name') is-invalid @enderror" type="text" id="to_name"
-                                        name="to_name" placeholder="{{ __('Enter name') }}"
-                                        value="{{ old('to_name') }}" />
-                                    @error('to_name')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="to_father_name" class="form-label">{{ __('Father Name') }}</label><span
-                                        class="text-danger">*</span>
-                                    <input class="form-control @error('to_father_name') is-invalid @enderror" type="text" id="to_father_name"
-                                        name="to_father_name" placeholder="{{ __('Enter father name') }}"
-                                        value="{{ old('to_father_name') }}" />
-                                    @error('to_father_name')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="to_email" class="form-label">{{ __('Email (optional)') }}</label>
-                                    <input class="form-control @error('to_email') is-invalid @enderror" type="email" id="to_email"
-                                        name="to_email" placeholder="{{ __('Enter email') }}" value="{{ old('to_email') }}" />
-                                    @error('to_email')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="to_phone" class="form-label">{{ __('Phone (optional)') }}</label>
-                                    <input class="form-control @error('to_phone') is-invalid @enderror" type="text" id="to_phone"
-                                        name="to_phone" placeholder="{{ __('Enter phone') }}" value="{{ old('to_phone') }}" />
-                                    @error('to_phone')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="to_cnic" class="form-label">{{ __('CNIC (optional)') }}</label>
-                                    <input class="form-control @error('to_cnic') is-invalid @enderror" type="text" id="to_cnic"
-                                        name="to_cnic" placeholder="{{ __('00000-0000000-0') }}" value="{{ old('to_cnic') }}" />
-                                    @error('to_cnic')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="to_company" class="form-label">{{ __('Company (optional)') }}</label>
-                                    <input class="form-control @error('to_company') is-invalid @enderror" type="text" id="to_company"
-                                        name="to_company" placeholder="{{ __('Enter company') }}" value="{{ old('to_company') }}" />
-                                    @error('to_company')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-6">
-                                    <label for="to_country" class="form-label">{{ __('Country (optional)') }}</label>
-                                    <input class="form-control @error('to_country') is-invalid @enderror" type="text" id="to_country"
-                                        name="to_country" placeholder="{{ __('Enter country') }}" value="{{ old('to_country') }}" />
-                                    @error('to_country')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                                <div class="mb-4 col-md-12">
-                                    <label for="to_address" class="form-label">{{ __('Address (optional)') }}</label>
-                                    <input class="form-control @error('to_address') is-invalid @enderror" type="text" id="to_address"
-                                        name="to_address" placeholder="{{ __('Enter address') }}" value="{{ old('to_address') }}" />
-                                    @error('to_address')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
+                        {{-- VEHICLE DETAILS --}}
+                        <div class="col-md-4 mb-3">
+                            <label>Engine No *</label>
+                            <input type="text" name="engine_no" class="form-control"
+                                value="{{ old('engine_no', $transfer->engine_no) }}" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label>Chassis No *</label>
+                            <input type="text" name="chassis_no" class="form-control"
+                                value="{{ old('chassis_no', $transfer->chassis_no) }}" required>
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label>Wheels</label>
+                            <input type="text" name="wheels" class="form-control"
+                                value="{{ old('wheels', $transfer->wheels) }}">
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>Weight</label>
+                            <input type="text" name="weight" class="form-control"
+                                value="{{ old('weight', $transfer->weight) }}">
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>Last Tax</label>
+                            <input type="text" name="last_tax" class="form-control"
+                                value="{{ old('last_tax', $transfer->last_tax) }}">
                         </div>
                     </div>
                     <div class="mt-2">

@@ -6,7 +6,10 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Dashboard\AlterationController;
+use App\Http\Controllers\Dashboard\CaseController;
+use App\Http\Controllers\Dashboard\FitnessController;
 use App\Http\Controllers\Dashboard\HomeController;
+use App\Http\Controllers\Dashboard\InsuranceController;
 use App\Http\Controllers\Dashboard\InvoiceController;
 use App\Http\Controllers\Dashboard\NotificationController;
 use App\Http\Controllers\Dashboard\OtherUserController;
@@ -16,6 +19,7 @@ use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\RolePermission\PermissionController;
 use App\Http\Controllers\Dashboard\RolePermission\RoleController;
 use App\Http\Controllers\Dashboard\SettingController;
+use App\Http\Controllers\Dashboard\TaxController;
 use App\Http\Controllers\Dashboard\TransferController;
 use App\Http\Controllers\Dashboard\User\ArchivedUserController;
 use App\Http\Controllers\Dashboard\User\UserController;
@@ -147,13 +151,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('other-users', OtherUserController::class);
             Route::get('other-users/status/{id}', [OtherUserController::class, 'updateStatus'])->name('other-users.status.update');
 
-            Route::resource('vehicles', VehicleController::class);
+
+            Route::resource('cases', CaseController::class);
+
+            Route::get('cases/{case}/next-steps', [CaseController::class, 'nextSteps'])
+                ->name('cases.next-steps');
+
+            Route::post('cases/{case}/add-work/{workType}', [CaseController::class, 'addWork'])
+                ->name('cases.add-work');
+
+            Route::get('cases/{case}/add-work/{workType}', [CaseController::class, 'showAddWorkForm'])
+                ->name('cases.add-work-form')
+                ->whereIn('workType', ['transfer', 'alteration', 'tax', 'insurance', 'permit', 'fitness']);
+
+            Route::post('cases/{case}/skip-work/{workType}', [CaseController::class, 'skipWork'])
+                ->name('cases.skip-work');
+
+            Route::post('cases/{case}/finish', [CaseController::class, 'finishAll'])
+                ->name('cases.finish');
 
             Route::resource('transfers', TransferController::class);
 
             Route::resource('alterations', AlterationController::class);
 
+            Route::resource('taxes', TaxController::class);
+
+            Route::resource('insurances', InsuranceController::class);
+
             Route::resource('permits', PermitController::class);
+
+            Route::resource('fitness', FitnessController::class);
 
         });
     });

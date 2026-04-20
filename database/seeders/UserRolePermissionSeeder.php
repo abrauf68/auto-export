@@ -47,11 +47,6 @@ class UserRolePermissionSeeder extends Seeder
         Permission::create(['name' => 'update setting']);
         Permission::create(['name' => 'delete setting']);
 
-        Permission::create(['name' => 'view vehicle']);
-        Permission::create(['name' => 'create vehicle']);
-        Permission::create(['name' => 'update vehicle']);
-        Permission::create(['name' => 'delete vehicle']);
-
         Permission::create(['name' => 'view transfer']);
         Permission::create(['name' => 'create transfer']);
         Permission::create(['name' => 'update transfer']);
@@ -62,16 +57,35 @@ class UserRolePermissionSeeder extends Seeder
         Permission::create(['name' => 'update alteration']);
         Permission::create(['name' => 'delete alteration']);
 
+        Permission::create(['name' => 'view tax']);
+        Permission::create(['name' => 'create tax']);
+        Permission::create(['name' => 'update tax']);
+        Permission::create(['name' => 'delete tax']);
+
+        Permission::create(['name' => 'view insurance']);
+        Permission::create(['name' => 'create insurance']);
+        Permission::create(['name' => 'update insurance']);
+        Permission::create(['name' => 'delete insurance']);
+
         Permission::create(['name' => 'view permit']);
         Permission::create(['name' => 'create permit']);
         Permission::create(['name' => 'update permit']);
         Permission::create(['name' => 'delete permit']);
+
+        Permission::create(['name' => 'view fitness']);
+        Permission::create(['name' => 'create fitness']);
+        Permission::create(['name' => 'update fitness']);
+        Permission::create(['name' => 'delete fitness']);
 
         Permission::create(['name' => 'view invoice']);
         Permission::create(['name' => 'create invoice']);
         Permission::create(['name' => 'update invoice']);
         Permission::create(['name' => 'delete invoice']);
 
+        Permission::create(['name' => 'view case']);
+        Permission::create(['name' => 'create case']);
+        Permission::create(['name' => 'update case']);
+        Permission::create(['name' => 'delete case']);
 
         // Create Roles
         $superAdminRole = Role::create(['name' => 'super-admin']); //as super-admin
