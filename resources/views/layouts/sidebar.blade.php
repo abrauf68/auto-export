@@ -2,7 +2,7 @@
     <div class="app-brand demo">
         <a href="{{ route('dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo">
-                <img height="100px" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="{{ env('APP_NAME') }}">
+                <img height="40px" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="{{ env('APP_NAME') }}">
             </span>
             {{-- <span class="app-brand-text demo menu-text fw-bold">{{\App\Helpers\Helper::getCompanyName()}}</span> --}}
         </a>
@@ -90,14 +90,14 @@
                 </a>
             </li>
         @endcan
-        {{-- @can(['view invoice'])
-            <li class="menu-item {{ request()->routeIs('dashboard.invoices.*') ? 'active' : '' }}">
-                <a href="{{ route('dashboard.invoices.index') }}" class="menu-link">
+        @can(['view billing'])
+            <li class="menu-item {{ request()->routeIs('dashboard.billings.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.billings.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons ti ti-receipt"></i>
-                    <div>{{__('Invoices')}}</div>
+                    <div>{{__('Billings')}}</div>
                 </a>
             </li>
-        @endcan --}}
+        @endcan
         @canany(['view user', 'view archived user', 'view staff'])
             <li
                 class="menu-item {{ request()->routeIs('dashboard.user.*') || request()->routeIs('dashboard.archived-user.*') || request()->routeIs('dashboard.other-users.*') ? 'open' : '' }}">

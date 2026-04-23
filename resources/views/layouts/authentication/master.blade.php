@@ -26,7 +26,7 @@
                         <div class="app-brand justify-content-center mb-6">
                             <a href="" class="app-brand-link">
                                 <span class="app-brand-logo">
-                                    <img style="height: 150px" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}"
+                                    <img style="height: 40px" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}"
                                         alt="{{ \App\Helpers\Helper::getCompanyName() }}">
                                 </span>
                             </a>

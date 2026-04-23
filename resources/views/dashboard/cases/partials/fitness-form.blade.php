@@ -1,6 +1,6 @@
 {{-- resources/views/dashboard/cases/partials/fitness-form.blade.php --}}
-<h6 class="text-primary mb-3">Fitness Certificate Details</h6>
-<div class="row g-3">
+<h6 class="text-primary mb-3 mt-3">Fitness Certificate Details</h6>
+<div class="row g-3 pb-3">
     <div class="col-md-6">
         <label class="form-label">From Authority</label>
         <select name="fitness_from" class="form-select">

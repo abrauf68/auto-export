@@ -21,14 +21,21 @@ class CaseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('view case');
+
         try {
-            $cases = VehicleCase::get();
+            $query = VehicleCase::query();
+
+            if ($request->filled('refer_to')) {
+                $query->where('case_refer_to', $request->refer_to);
+            }
+
+            $cases = $query->latest()->get();
+
             return view('dashboard.cases.index', compact('cases'));
         } catch (\Throwable $th) {
-            // throw $th;
             Log::error("Case Index Failed:" . $th->getMessage());
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
         }
@@ -63,13 +70,13 @@ class CaseController extends Controller
             'submitted_by'     => 'required|string|max:150',
             'mobile_no'        => 'required|string|max:20',
             'submission_date'  => 'required|date',
-            'tentative_return_date' => 'nullable|date|after_or_equal:submission_date',
+            'tentative_return_date' => 'nullable|date|after_or_equal:submission_date|after:today',
             'case_refer_to'    => 'required|in:Karachi,Lasbella,Quetta,Peshawar,Gilgit,Punjab,Other',
             'work_type'        => 'required|in:transfer,alteration,tax,insurance,permit,fitness',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput($request->all())->with('error', 'Validation Error!');
+            return redirect()->back()->withErrors($validator)->withInput($request->all())->with('error', $validator->errors()->first());
         }
 
         try {
@@ -149,6 +156,7 @@ class CaseController extends Controller
                         'vehicle_case_id' => $vehicleCase->id,
                         'region'          => $request->region,
                         'docs'            => $request->docs,
+                        'expiry_date'     => $request->expiry_date,
                     ]);
                     break;
 
@@ -276,6 +284,7 @@ class CaseController extends Controller
                         'vehicle_case_id' => $case->id,
                         'region'          => $request->region,
                         'docs'            => $request->docs,
+                        'expiry_date'     => $request->expiry_date,
                     ]);
                     break;
 
@@ -412,5 +421,36 @@ class CaseController extends Controller
             Log::error("Case Delete Failed:" . $th->getMessage());
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
         }
+    }
+
+    public function getCaseItems($id)
+    {
+        $case = VehicleCase::with([
+            'transfer',
+            'tax',
+            'insurance',
+            'permit',
+            'fitness',
+            'alteration'
+        ])->findOrFail($id);
+
+        $map = [
+            'transfer'   => 'Transfer Fee',
+            'tax'        => 'Tax Fee',
+            'insurance'  => 'Insurance Fee',
+            'permit'     => 'Permit Fee',
+            'fitness'    => 'Fitness Fee',
+            'alteration' => 'Alteration Fee',
+        ];
+
+        $items = [];
+
+        foreach ($map as $relation => $label) {
+            if ($case->$relation) {
+                $items[] = ['name' => $label];
+            }
+        }
+
+        return response()->json($items);
     }
 }

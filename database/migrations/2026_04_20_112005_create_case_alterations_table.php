@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('vehicle_case_id')->constrained('vehicle_cases')->cascadeOnDelete();
 
-            $table->string('engine_no');
-            $table->string('chassis_no');
+            $table->string('engine_no')->nullable();
+            $table->string('chassis_no')->nullable();
             $table->string('wheels')->nullable();
             $table->string('weight')->nullable();
             $table->string('last_tax')->nullable();

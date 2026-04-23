@@ -28,12 +28,12 @@ return new class extends Migration
             $table->boolean('to_biometric')->default(0);
 
             // Vehicle
-            $table->string('engine_no');
-            $table->string('chassis_no');
+            $table->string('engine_no')->nullable();
+            $table->string('chassis_no')->nullable();
             $table->string('wheels')->nullable();
             $table->string('weight')->nullable();
             $table->string('last_tax')->nullable();
-            
+
             $table->timestamps();
         });
     }

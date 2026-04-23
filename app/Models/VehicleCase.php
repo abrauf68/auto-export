@@ -51,4 +51,9 @@ class VehicleCase extends Model
     {
         return $this->hasOne(CaseFitness::class);
     }
+
+    public function billing()
+    {
+        return $this->hasOne(Billing::class);
+    }
 }

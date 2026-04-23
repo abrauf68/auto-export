@@ -13,5 +13,6 @@ class CasePermit extends Model
         'vehicle_case_id',
         'region',
         'docs',
+        'expiry_date',
     ];
 }

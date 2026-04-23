@@ -177,11 +177,10 @@
 
     @if (Session::has('error'))
         Swal.fire({
-            title: '{{__("Error!")}}',
-            text: "{{ __(Session::get('error')) }}",
+            title: 'Error!',
+            text: "{{ Session::get('error') }}",
             icon: 'error',
-            timer: 2000,
-            showConfirmButton: false
+            showCancelButton: true,
         });
     @endif
 

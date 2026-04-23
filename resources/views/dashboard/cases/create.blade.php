@@ -300,6 +300,10 @@
                                     <label class="form-label">Documents / Remarks</label>
                                     <input type="text" name="docs" class="form-control" placeholder="List of required documents">
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Expiry Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="expiry_date" class="form-control">
+                                </div>
                             </div>
                         </div>
 

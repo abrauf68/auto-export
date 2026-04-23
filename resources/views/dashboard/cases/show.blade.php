@@ -84,7 +84,7 @@
                         <div class="card-header bg-label-primary">
                             <strong>Transfer Details</strong>
                         </div>
-                        <div class="card-body mb-3">
+                        <div class="card-body mt-3">
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6 class="text-dark">From</h6>
@@ -129,7 +129,7 @@
                         <div class="card-header bg-label-primary">
                             <strong>Alteration Details</strong>
                         </div>
-                        <div class="card-body mb-3">
+                        <div class="card-body mt-3">
                             <div class="row g-3">
                                 <div class="col-md-3"><strong>Engine No:</strong> {{ $case->alteration->engine_no }}</div>
                                 <div class="col-md-3"><strong>Chassis No:</strong> {{ $case->alteration->chassis_no }}</div>
@@ -156,7 +156,7 @@
                         <div class="card-header bg-label-primary">
                             <strong>Tax Details</strong>
                         </div>
-                        <div class="card-body mb-3">
+                        <div class="card-body mt-3">
                             <p><strong>From:</strong> {{ $case->tax->tax_from }}</p>
                             <p><strong>To:</strong> {{ $case->tax->tax_to }}</p>
                         </div>
@@ -171,7 +171,7 @@
                         <div class="card-header bg-label-primary">
                             <strong>Insurance Details</strong>
                         </div>
-                        <div class="card-body mb-3">
+                        <div class="card-body mt-3">
                             <p class="text-muted">{{ $case->insurance->details }}</p>
                         </div>
                     </div>
@@ -185,9 +185,10 @@
                         <div class="card-header bg-label-primary">
                             <strong>Permit Details</strong>
                         </div>
-                        <div class="card-body mb-3">
+                        <div class="card-body mt-3">
                             <p><strong>Region:</strong> {{ $case->permit->region }}</p>
                             <p><strong>Documents:</strong> {{ $case->permit->docs ?? 'N/A' }}</p>
+                            <p><strong>Expiration Date:</strong> {{ $case->permit->expiry_date ?? 'N/A' }}</p>
                         </div>
                     </div>
                 </div>
@@ -200,7 +201,7 @@
                         <div class="card-header bg-label-primary">
                             <strong>Fitness Details</strong>
                         </div>
-                        <div class="card-body mb-3">
+                        <div class="card-body mt-3">
                             <p><strong>From:</strong> {{ $case->fitness->fitness_from }}</p>
                             <p><strong>Documents:</strong> {{ $case->fitness->docs ?? 'N/A' }}</p>
                         </div>

@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('case_refer_to'); // Karachi, Quetta etc
             $table->string('work_type'); // Transfer, Tax etc
 
+            $table->enum('status', ['open', 'closed'])->default('open');
+
             $table->timestamps();
         });
     }

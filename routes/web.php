@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Dashboard\AlterationController;
+use App\Http\Controllers\Dashboard\BillingController;
 use App\Http\Controllers\Dashboard\CaseController;
 use App\Http\Controllers\Dashboard\FitnessController;
 use App\Http\Controllers\Dashboard\HomeController;
@@ -182,14 +183,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::resource('fitness', FitnessController::class);
 
+            Route::resource('billings', BillingController::class);
+
         });
     });
-
+    Route::get('/dashboard/cases/{id}/items', [CaseController::class, 'getCaseItems']);
 });
 
 // Frontend Pages Routes
 Route::name('frontend.')->group(function () {
-
+    Route::get('billing/verify/{id}', [BillingController::class, 'verifyBilling'])->name('billing.verify');
 });
 
 

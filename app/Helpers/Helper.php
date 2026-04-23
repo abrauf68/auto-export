@@ -14,16 +14,16 @@ class Helper
     public static function dashboard_route()
     {
         $user = User::find(Auth::user()->id);
-        $route = $user->role->role.'.dashboard';
+        $route = $user->role->role . '.dashboard';
         return $route;
     }
     public static function getLogoLight()
     {
-        return CompanySetting::first()->light_logo ?? asset('assets/img/logo/ba-logo.png');
+        return CompanySetting::first()->light_logo ?? asset('assets/img/logo/ba-logo-2.png');
     }
     public static function getLogoDark()
     {
-        return CompanySetting::first()->dark_logo ?? asset('assets/img/logo/ba-logo.png');
+        return CompanySetting::first()->dark_logo ?? asset('assets/img/logo/ba-logo-2.png');
     }
     public static function getFavicon()
     {
@@ -32,6 +32,18 @@ class Helper
     public static function getCompanyName()
     {
         return CompanySetting::first()->company_name ?? env('APP_NAME');
+    }
+    public static function getCompanyAddress()
+    {
+        return CompanySetting::first()->address ?? 'Karachi, Pakistan';
+    }
+    public static function getCompanyPhone()
+    {
+        return CompanySetting::first()->phone ?? '';
+    }
+    public static function getCompanyEmail()
+    {
+        return CompanySetting::first()->email ?? '';
     }
     public static function getTimezone()
     {
@@ -69,18 +81,20 @@ class Helper
     {
         $currencySetting = SystemSetting::first();
 
+        $formattedAmount = number_format((float) $amount, 2, '.', ',');
+
         if (!$currencySetting) {
-            return $amount; // Return the amount as is if settings are not found
+            return $formattedAmount;
         }
 
         $symbol = $currencySetting->currency_symbol;
-        $position = $currencySetting->currency_symbol_position; // 'prefix' or 'postfix'
+        $position = $currencySetting->currency_symbol_position;
 
         if ($position === 'prefix') {
-            return $symbol . $amount;
+            return $symbol . $formattedAmount;
         }
 
-        return $amount . $symbol;
+        return $formattedAmount . $symbol;
     }
 
     public static function renderRecaptcha($formId, $action = 'register')
@@ -121,5 +135,11 @@ class Helper
                 });
             </script>
         HTML;
+    }
+
+    public static function numberToWords($number)
+    {
+        $f = new \NumberFormatter("en", \NumberFormatter::SPELLOUT);
+        return ucfirst($f->format($number)) . " Only";
     }
 }

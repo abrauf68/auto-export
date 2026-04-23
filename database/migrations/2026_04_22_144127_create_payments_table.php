@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('case_permits', function (Blueprint $table) {
+        Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vehicle_case_id')->constrained('vehicle_cases')->cascadeOnDelete();
-            $table->string('region');
-            $table->string('docs')->nullable();
-            $table->date('expiry_date')->nullable();
+            $table->string('transaction_id')->unique();
+            $table->foreignId('billing_id')->constrained('billings')->cascadeOnDelete();
+            $table->decimal('amount', 10, 2);
+            $table->date('payment_date');
+            $table->string('payment_method');
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('case_permits');
+        Schema::dropIfExists('payments');
     }
 };
