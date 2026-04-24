@@ -4,6 +4,7 @@ namespace App\Http;
 
 use App\Http\Middleware\CheckAccountActivation;
 use App\Http\Middleware\LocaleMiddleware;
+use App\Jobs\TentativeDateReminderJob;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -44,7 +45,7 @@ class Kernel extends HttpKernel
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -70,4 +71,9 @@ class Kernel extends HttpKernel
         'check.activation' => CheckAccountActivation::class,
         'locale' => LocaleMiddleware::class,
     ];
+
+    protected function schedule($schedule)
+    {
+        $schedule->job(new TentativeDateReminderJob)->dailyAt('09:00');
+    }
 }

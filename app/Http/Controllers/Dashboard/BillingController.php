@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Billing;
 use App\Models\BillingItem;
 use App\Models\Payment;
+use App\Models\User;
 use App\Models\VehicleCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -113,6 +114,17 @@ class BillingController extends Controller
                 $payment->payment_method = $request->payment_method ?? 'cash';
                 $payment->save();
             }
+
+            $adminUsers = User::whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'super-admin']);
+            })->get();
+
+            app('notificationService')->notifyUsers(
+                $adminUsers,
+                'New Bill #' . $billing->bill_no . ' created for Case #' . $billing->vehicleCase->case_no . ' by ' . auth()->user()->name,
+                'billings',
+                $billing->id
+            );
 
             DB::commit();
             return redirect()->route('dashboard.billings.index')->with('success', 'Billing Created Successfully');
@@ -235,6 +247,17 @@ class BillingController extends Controller
             }
 
             DB::commit();
+
+            $adminUsers = User::whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'super-admin']);
+            })->get();
+
+            app('notificationService')->notifyUsers(
+                $adminUsers,
+                'Bill #' . $billing->bill_no . ' has been updated by ' . auth()->user()->name,
+                'billings',
+                $billing->id
+            );
 
             return redirect()
                 ->route('dashboard.billings.index')

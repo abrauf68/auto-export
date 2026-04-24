@@ -10,6 +10,7 @@ use App\Models\CaseTax;
 use App\Models\CaseInsurance;
 use App\Models\CasePermit;
 use App\Models\CaseFitness;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -171,7 +172,16 @@ class CaseController extends Controller
 
             DB::commit();
 
-            // After DB::commit();  (inside try block)
+            $adminUsers = User::whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'super-admin']);
+            })->get();
+
+            app('notificationService')->notifyUsers(
+                $adminUsers,
+                'A new Case #' . $vehicleCase->case_no . ' has been created by ' . auth()->user()->name . '. Click to check details.',
+                'cases',
+                $vehicleCase->id
+            );
 
             return redirect()
                 ->route('dashboard.cases.next-steps', $vehicleCase->id)

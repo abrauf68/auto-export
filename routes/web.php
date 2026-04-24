@@ -118,17 +118,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('profile/setting/account/{id}', [ProfileController::class, 'accountDeactivation'])->name('account.deactivate');
         Route::post('profile/security/password/{id}', [ProfileController::class, 'passwordUpdate'])->name('update.password');
 
-        Route::get('/notifications', [NotificationController::class, 'index']);
-        Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
-        Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
-        Route::post('/notifications/{id}/delete', [NotificationController::class, 'deleteNotification']);
+        Route::get('/get/notifications', [NotificationController::class, 'getNotifications']);
+        Route::get('/notifications/click/{id}', [NotificationController::class, 'notificationClickHandle'])->name('notification.click');
+        Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+        Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+        Route::post('/notifications/delete-all', [NotificationController::class, 'deleteAll'])->name('notifications.deleteAll');
+        Route::post('/notifications/{id}/delete', [NotificationController::class, 'deleteNotification'])->name('notifications.delete');
         Route::get('/notifications/send-test-noti/{id}', [NotificationController::class, 'testNotification']);
 
         Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
 
         // Admin Dashboard Authentication Routes
         Route::prefix('dashboard')->name('dashboard.')->group(function () {
-
+            Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
             Route::resource('user', UserController::class);
             Route::resource('archived-user', ArchivedUserController::class);
             Route::get('user/restore/{id}', [ArchivedUserController::class, 'restoreUser'])->name('archived-user.restore');

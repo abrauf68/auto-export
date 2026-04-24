@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Billing;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -84,6 +85,16 @@ class PaymentController extends Controller
             $payment->payment_method = $request->payment_method;
             $payment->save();
 
+            $adminUsers = User::whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'super-admin']);
+            })->get();
+            app('notificationService')->notifyUsers(
+                $adminUsers,
+                'New payment of Rs. ' . $payment->amount . ' received for Bill #' . $billing->bill_no . ' by ' . auth()->user()->name,
+                'payments',
+                $payment->id
+            );
+
             $billing->paid_amount += $request->amount;
             $billing->remaining_amount -= $request->amount;
 
@@ -92,6 +103,13 @@ class PaymentController extends Controller
             if ($billing->remaining_amount <= 0) {
                 $billing->remaining_amount = 0;
                 $billing->status = 'paid';
+
+                app('notificationService')->notifyUsers(
+                    $adminUsers,
+                    'Bill #' . $billing->bill_no . ' has been fully paid by ' . auth()->user()->name,
+                    'billings',
+                    $billing->id
+                );
             } elseif ($billing->paid_amount > 0) {
                 $billing->status = 'partial';
             } else {
@@ -181,6 +199,17 @@ class PaymentController extends Controller
 
             // 🔹 Delete payment
             $payment->delete();
+
+            $adminUsers = User::whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'super-admin']);
+            })->get();
+
+            app('notificationService')->notifyUsers(
+                $adminUsers,
+                'Payment of Rs. ' . $payment->amount . ' deleted for Bill #' . $billing->bill_no . ' by ' . auth()->user()->name,
+                'payments',
+                $payment->id
+            );
 
             DB::commit();
 
