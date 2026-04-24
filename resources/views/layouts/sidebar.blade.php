@@ -98,6 +98,14 @@
                 </a>
             </li>
         @endcan
+        @can(['view payment'])
+            <li class="menu-item {{ request()->routeIs('dashboard.payments.*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.payments.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-coin"></i>
+                    <div>{{__('Payments')}}</div>
+                </a>
+            </li>
+        @endcan
         @canany(['view user', 'view archived user', 'view staff'])
             <li
                 class="menu-item {{ request()->routeIs('dashboard.user.*') || request()->routeIs('dashboard.archived-user.*') || request()->routeIs('dashboard.other-users.*') ? 'open' : '' }}">

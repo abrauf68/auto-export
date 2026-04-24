@@ -185,6 +185,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::resource('billings', BillingController::class);
 
+            Route::resource('payments', PaymentController::class);
+
         });
     });
     Route::get('/dashboard/cases/{id}/items', [CaseController::class, 'getCaseItems']);
@@ -192,7 +194,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Frontend Pages Routes
 Route::name('frontend.')->group(function () {
-    Route::get('billing/verify/{id}', [BillingController::class, 'verifyBilling'])->name('billing.verify');
+    Route::get('billing/verify/{bill_no}', [BillingController::class, 'verifyBilling'])->name('billing.verify');
 });
 
 

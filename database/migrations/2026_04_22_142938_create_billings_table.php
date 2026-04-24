@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('vehicle_case_id')->constrained('vehicle_cases')->cascadeOnDelete();
             $table->enum('billing_type', ['local', 'out_of_city'])->default('local');
+            $table->string('bill_no')->nullable()->unique();
             $table->decimal('total_amount', 10, 2);
             $table->decimal('paid_amount', 10, 2);
             $table->decimal('remaining_amount', 10, 2);

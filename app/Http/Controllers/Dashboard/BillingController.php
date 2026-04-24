@@ -83,6 +83,19 @@ class BillingController extends Controller
             $billing->description = $request->description;
             $billing->save();
 
+            $typeCode = match ($billing->billing_type) {
+                'local' => 'X',
+                'out_of_city' => 'Y',
+                default => 'Z',
+            };
+
+            do {
+                $billNo = 'BA-' . $typeCode . '-' . str_pad($billing->id, 5, '0', STR_PAD_LEFT);
+            } while (Billing::where('bill_no', $billNo)->exists());
+
+            $billing->bill_no = $billNo;
+            $billing->save();
+
             foreach ($request->items as $item) {
                 $billingItem = new BillingItem();
                 $billingItem->billing_id = $billing->id;
@@ -254,10 +267,10 @@ class BillingController extends Controller
         }
     }
 
-    public function verifyBilling(string $id)
+    public function verifyBilling(string $bill_no)
     {
         try {
-            $billing = Billing::with('items', 'vehicleCase')->findOrFail($id);
+            $billing = Billing::with('items', 'vehicleCase')->where('bill_no', $bill_no)->first();
             return view('frontend.bill', compact('billing'));
         } catch (\Throwable $th) {
             Log::error("Billing Show Failed:" . $th->getMessage());

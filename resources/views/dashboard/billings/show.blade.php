@@ -356,7 +356,7 @@
             <div class="receipt-title">CASH MEMO</div>
 
             <div class="receipt-meta">
-                Bill No: <span class="blade-placeholder">{{ $billing->id ?? '00000' }}</span><br>
+                Bill No: <span class="blade-placeholder">{{ $billing->bill_no ?? '00000' }}</span><br>
                 Date: <span class="blade-placeholder">{{ $billing->billing_date ?? date('Y-m-d') }}</span><br>
                 Type: <span class="blade-placeholder">{{ strtoupper($billing->billing_type ?? 'LOCAL') }}</span><br>
                 <span
@@ -438,10 +438,10 @@
         <!-- ===== QR CODE FOR VERIFICATION ===== -->
         <div class="double-separator"></div>
         <div class="qr-section">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data={{ urlencode(route('frontend.billing.verify', $billing->id ?? '00000')) }}&margin=0&ecc=H"
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data={{ urlencode(route('frontend.billing.verify', $billing->bill_no ?? '00000')) }}&margin=0&ecc=H"
                 alt="Verify Bill" class="qr-code">
             <div class="qr-label">SCAN TO VERIFY</div>
-            <div class="qr-url blade-placeholder">{{ route('frontend.billing.verify', $billing->id ?? '00000') }}</div>
+            <div class="qr-url blade-placeholder">{{ route('frontend.billing.verify', $billing->bill_no ?? '00000') }}</div>
             <div class="qr-label" style="font-weight:normal">Authenticity Check</div>
         </div>
 
