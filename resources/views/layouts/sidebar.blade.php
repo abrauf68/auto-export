@@ -37,10 +37,10 @@
             </li>
         @endcan
 
-        @can(['view transfer'])
+        {{-- @can(['view transfer'])
             <li class="menu-item {{ request()->routeIs('dashboard.transfers.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.transfers.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-arrows-exchange"></i> {{-- Ownership transfer --}}
+                    <i class="menu-icon tf-icons ti ti-arrows-exchange"></i>
                     <div>{{ __('Transfers') }}</div>
                 </a>
             </li>
@@ -49,7 +49,7 @@
         @can(['view alteration'])
             <li class="menu-item {{ request()->routeIs('dashboard.alterations.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.alterations.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-settings"></i> {{-- Modification/changes --}}
+                    <i class="menu-icon tf-icons ti ti-settings"></i>
                     <div>{{ __('Alterations') }}</div>
                 </a>
             </li>
@@ -58,7 +58,7 @@
         @can(['view tax'])
             <li class="menu-item {{ request()->routeIs('dashboard.taxes.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.taxes.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-receipt-tax"></i> {{-- Tax related --}}
+                    <i class="menu-icon tf-icons ti ti-receipt-tax"></i>
                     <div>{{ __('Taxes') }}</div>
                 </a>
             </li>
@@ -67,7 +67,7 @@
         @can(['view insurance'])
             <li class="menu-item {{ request()->routeIs('dashboard.insurances.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.insurances.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-shield-check"></i> {{-- Protection --}}
+                    <i class="menu-icon tf-icons ti ti-shield-check"></i>
                     <div>{{ __('Insurances') }}</div>
                 </a>
             </li>
@@ -76,7 +76,7 @@
         @can(['view permit'])
             <li class="menu-item {{ request()->routeIs('dashboard.permits.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.permits.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-file-certificate"></i> {{-- Official permit --}}
+                    <i class="menu-icon tf-icons ti ti-file-certificate"></i>
                     <div>{{ __('Permits') }}</div>
                 </a>
             </li>
@@ -85,11 +85,11 @@
         @can(['view fitness'])
             <li class="menu-item {{ request()->routeIs('dashboard.fitness.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.fitness.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-heart-rate-monitor"></i> {{-- Vehicle fitness --}}
+                    <i class="menu-icon tf-icons ti ti-heart-rate-monitor"></i>
                     <div>{{ __('Fitness Certificates') }}</div>
                 </a>
             </li>
-        @endcan
+        @endcan --}}
         @can(['view billing'])
             <li class="menu-item {{ request()->routeIs('dashboard.billings.*') ? 'active' : '' }}">
                 <a href="{{ route('dashboard.billings.index') }}" class="menu-link">
