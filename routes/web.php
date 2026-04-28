@@ -127,6 +127,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/notifications/send-test-noti/{id}', [NotificationController::class, 'testNotification']);
 
         Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/refresh', [HomeController::class, 'refreshData'])->name('dashboard.refresh');
 
         // Admin Dashboard Authentication Routes
         Route::prefix('dashboard')->name('dashboard.')->group(function () {

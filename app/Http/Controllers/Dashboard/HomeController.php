@@ -3,16 +3,29 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Providers\DashboardServiceProvider;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    protected $dashboardProvider;
+
+    public function __construct()
+    {
+        $this->dashboardProvider = new DashboardServiceProvider(app());
+    }
+
     public function index()
     {
         return view('dashboard.index');
+    }
+
+    public function refreshData(Request $request)
+    {
+        $type = $request->get('type');
+        $data = $this->dashboardProvider->getRefreshData($type);
+
+        return response()->json($data);
     }
 
     /**
