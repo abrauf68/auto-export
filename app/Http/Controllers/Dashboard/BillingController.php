@@ -300,4 +300,15 @@ class BillingController extends Controller
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
         }
     }
+
+    public function testing()
+    {
+
+        try {
+            return view('frontend.testing');
+        } catch (\Throwable $th) {
+            Log::error("Billing Index Failed:" . $th->getMessage());
+            return redirect()->back()->with('error', "Something went wrong! Please try again later");
+        }
+    }
 }

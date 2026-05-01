@@ -197,6 +197,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Frontend Pages Routes
 Route::name('frontend.')->group(function () {
+    Route::get('testing', [BillingController::class, 'testing'])->name('testing');
     Route::get('billing/verify/{bill_no}', [BillingController::class, 'verifyBilling'])->name('billing.verify');
 });
 
