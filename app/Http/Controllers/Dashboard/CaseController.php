@@ -463,4 +463,52 @@ class CaseController extends Controller
 
         return response()->json($items);
     }
+
+
+    public function storeCaseViaApi(Request $request)
+    {
+        dd($request->all());
+        $validator = Validator::make($request->all(), [
+            'vehicle_reg_no'   => 'required|string|max:50|unique:vehicle_cases',
+            'make'             => 'nullable|string|max:100',
+            'year'             => 'nullable|integer|min:1900|max:2100',
+            'submitted_by'     => 'required|string|max:150',
+            'mobile_no'        => 'required|string|max:20',
+            'submission_date'  => 'required|date',
+            'tentative_return_date' => 'nullable|date|after_or_equal:submission_date|after:today',
+            'case_refer_to'    => 'required|in:Karachi,Lasbella,Quetta,Peshawar,Gilgit,Punjab,Other',
+            'work_type'        => 'required|in:transfer,alteration,tax,insurance,permit,fitness',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+            $caseNo = 'CASE-' . now()->format('Y') . '-' . Str::padLeft(VehicleCase::count() + 1, 4, '0');
+
+            // Create Main Vehicle Case
+            $vehicleCase = VehicleCase::create([
+                'case_no'               => $caseNo,
+                'vehicle_reg_no'        => $request->vehicle_reg_no,
+                'make'                  => $request->make,
+                'year'                  => $request->year,
+                'submitted_by'          => $request->submitted_by,
+                'mobile_no'             => $request->mobile_no,
+                'submission_date'       => $request->submission_date,
+                'tentative_return_date' => $request->tentative_return_date,
+                'case_refer_to'         => $request->case_refer_to,
+                'work_type'             => $request->work_type,
+            ]);
+
+            DB::commit();
+
+            return response()->json(['success' => "Case #{$caseNo} created successfully!", 'case_id' => $vehicleCase->id]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('API Case Creation Failed', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Failed to create case: ' . $e->getMessage()], 500);
+        }
+    }
 }

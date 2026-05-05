@@ -127,6 +127,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/notifications/send-test-noti/{id}', [NotificationController::class, 'testNotification']);
 
         Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
+        Route::get('dashboard/stats', [HomeController::class, 'dashboardStatsIndex'])->name('dashboard.stats');
         Route::get('/dashboard/refresh', [HomeController::class, 'refreshData'])->name('dashboard.refresh');
 
         // Admin Dashboard Authentication Routes
@@ -193,6 +194,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
     Route::get('/dashboard/cases/{id}/items', [CaseController::class, 'getCaseItems']);
+    Route::post('/api/cases/store', [CaseController::class, 'storeCaseViaApi']);
 });
 
 // Frontend Pages Routes

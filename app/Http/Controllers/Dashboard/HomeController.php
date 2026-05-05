@@ -20,6 +20,11 @@ class HomeController extends Controller
         return view('dashboard.index');
     }
 
+    public function dashboardStatsIndex()
+    {
+        return view('dashboard.dashboard-stats');
+    }
+
     public function refreshData(Request $request)
     {
         $type = $request->get('type');

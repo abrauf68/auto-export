@@ -2,610 +2,866 @@
 
 @section('title', 'Dashboard')
 
+@section('css')
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    .city-card { transition: all 0.2s; cursor: pointer; border-radius: 1.2rem; }
+    .city-card:hover { transform: translateY(-5px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15); }
+    .service-card { transition: all 0.15s; cursor: pointer; border-radius: 1rem; }
+    .service-card:hover { transform: scale(1.02); background: #eef2ff; }
+    .form-card { background: white; border-radius: 1.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+    .step-indicator { background: #e2e8f0; border-radius: 2rem; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 600; }
+    .step-active { background: #2563eb; color: white; }
+    .service-details-section { background: #fefce8; border-left: 4px solid #eab308; transition: all 0.2s; }
+    .service-details-section h3 { font-size: 1rem; font-weight: 700; color: #854d0e; }
+    .required-dot:after { content: "*"; color: #e11d48; margin-left: 3px; }
+    table th, table td { vertical-align: middle; }
+    .amount-input { width: 110px; }
+</style>
+@endsection
+
 @section('content')
-    <div class="row g-6">
-        @php
-            $unreadCount = auth()->user()->notifications()->whereNull('read_at')->count();
-        @endphp
-
-        @if ($unreadCount > 0)
-            <div class="col-lg-12">
-                <div class="alert alert-danger alert-dismissible" role="alert">
-                    <div class="d-flex align-items-baseline">
-                        <span class="alert-icon rounded">
-                            <i class="icon-base ti ti-bell ti-md"></i>
-                        </span>
-                        <span>
-                            You have {{ $unreadCount }} new notifications to read!
-                        </span>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+    <!-- ======================= SCREEN 1: DASHBOARD WITH CITIES + FILTERABLE PENDING ======================= -->
+    <div id="screen1Dashboard" class="max-w-7xl mx-auto">
+        <div class="flex flex-wrap justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-gray-800">{{\App\Helpers\Helper::getCompanyName()}}</h1>
+                <p class="text-gray-500 text-sm">Permits, Taxes, Insurance & Vehicle Services — Pakistan</p>
             </div>
-        @endif
-
-        <!-- Auto-refresh control -->
-        <div class="col-md-12 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="ti ti-refresh me-2"></i>
-                            <span>Auto-refresh: </span>
-                            <div class="form-check form-check-inline ms-2">
-                                <input class="form-check-input" type="radio" name="refreshInterval" id="off" value="0" checked>
-                                <label class="form-check-label" for="off">Off</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="refreshInterval" id="30s" value="30000">
-                                <label class="form-check-label" for="30s">30s</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="refreshInterval" id="1m" value="60000">
-                                <label class="form-check-label" for="1m">1m</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="refreshInterval" id="5m" value="300000">
-                                <label class="form-check-label" for="5m">5m</label>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary btn-sm" onclick="refreshAllData()">
-                            <i class="ti ti-refresh me-1"></i> Refresh Now
-                        </button>
-                    </div>
+            <div class="mt-2 md:mt-0 bg-white px-5 py-2 rounded-full shadow text-sm font-semibold text-gray-700"><i
+                    class="fas fa-truck text-sky-600 mr-1"></i> Transport Management</div>
+        </div>
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-700 mb-4"><i class="fas fa-map-marker-alt text-amber-600 mr-2"></i> Select
+                a City to Start</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-5">
+                <div data-city="Karachi"
+                    class="city-card bg-gradient-to-br from-emerald-50 to-green-50 p-5 rounded-xl shadow text-center"><i
+                        class="fas fa-city text-3xl text-emerald-700 mb-2"></i>
+                    <h3 class="font-bold">Karachi</h3>
+                </div>
+                <div data-city="Lasbella"
+                    class="city-card bg-gradient-to-br from-sky-50 to-blue-50 p-5 rounded-xl shadow text-center"><i
+                        class="fas fa-map-pin text-3xl text-sky-700 mb-2"></i>
+                    <h3 class="font-bold">Lasbella</h3>
+                </div>
+                <div data-city="Quetta"
+                    class="city-card bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-xl shadow text-center"><i
+                        class="fas fa-mountain text-3xl text-amber-700 mb-2"></i>
+                    <h3 class="font-bold">Quetta</h3>
+                </div>
+                <div data-city="Peshawar"
+                    class="city-card bg-gradient-to-br from-indigo-50 to-purple-50 p-5 rounded-xl shadow text-center"><i
+                        class="fas fa-landmark text-3xl text-indigo-700 mb-2"></i>
+                    <h3 class="font-bold">Peshawar</h3>
+                </div>
+                <div data-city="Gilgit"
+                    class="city-card bg-gradient-to-br from-cyan-50 to-teal-50 p-5 rounded-xl shadow text-center"><i
+                        class="fas fa-mountain text-3xl text-cyan-700 mb-2"></i>
+                    <h3 class="font-bold">Gilgit</h3>
+                </div>
+                <div data-city="Punjab"
+                    class="city-card bg-gradient-to-br from-lime-50 to-green-50 p-5 rounded-xl shadow text-center"><i
+                        class="fas fa-seedling text-3xl text-lime-700 mb-2"></i>
+                    <h3 class="font-bold">Punjab</h3>
+                </div>
+                <div data-city="Other"
+                    class="city-card bg-gradient-to-br from-gray-50 to-stone-50 p-5 rounded-xl shadow text-center"><i
+                        class="fas fa-globe text-3xl text-gray-600 mb-2"></i>
+                    <h3 class="font-bold">Other</h3>
                 </div>
             </div>
         </div>
-
-        <!-- ================= SUMMARY CARDS ================= -->
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6>Total Transfers</h6>
-                            <h3 id="totalTransfers">{{ $summaryStats['total_transfers'] ?? 0 }}</h3>
-                        </div>
-                        <i class="ti ti-arrows-exchange fs-1 text-primary"></i>
-                    </div>
+        <div class="bg-white rounded-2xl shadow-md p-5 mb-6">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+                <h2 class="text-xl font-bold"><i class="fas fa-filter text-indigo-500 mr-2"></i> Pending Items (Filter)</h2>
+                <div class="flex flex-wrap gap-3">
+                    <select id="filterCity" class="border rounded-xl px-4 py-2 text-sm bg-gray-50">
+                        <option value="all">All Cities</option>
+                        <option value="Karachi">Karachi</option>
+                        <option value="Lasbella">Lasbella</option>
+                        <option value="Quetta">Quetta</option>
+                        <option value="Peshawar">Peshawar</option>
+                        <option value="Gilgit">Gilgit</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="filterService" class="border rounded-xl px-4 py-2 text-sm bg-gray-50">
+                        <option value="all">All Services</option>
+                        <option value="Transfer">Transfer</option>
+                        <option value="Alteration">Alteration</option>
+                        <option value="Route Permit">Route Permit</option>
+                        <option value="FC">FC</option>
+                        <option value="Insurance">Insurance</option>
+                        <option value="Tax">Tax</option>
+                        <option value="File Return">File Return</option>
+                        <option value="Others">Others</option>
+                    </select>
+                    <button id="applyFilterBtn" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm"><i
+                            class="fas fa-search mr-1"></i> Apply</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold text-rose-600 mb-2"><i class="fas fa-rupee-sign"></i> Pending Payments</h3>
+                    <div id="filteredPaymentsList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-amber-600 mb-2"><i class="fas fa-folder-open"></i> Pending Cases</h3>
+                    <div id="filteredCasesList" class="space-y-2 max-h-64 overflow-y-auto"></div>
                 </div>
             </div>
         </div>
+        <div class="text-center text-xs text-gray-400 mt-4">👉 Click any city card to proceed</div>
+    </div>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6>Total Alterations</h6>
-                            <h3 id="totalAlterations">{{ $summaryStats['total_alterations'] ?? 0 }}</h3>
-                        </div>
-                        <i class="ti ti-edit fs-1 text-warning"></i>
-                    </div>
-                </div>
-            </div>
+    <!-- ======================= SCREEN 2: SERVICE SELECTION ======================= -->
+    <div id="screen2Service" class="max-w-6xl mx-auto hidden">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <button id="backToCitiesBtn"
+                class="bg-gray-200 hover:bg-gray-300 px-5 py-2 rounded-full font-medium flex items-center gap-2"><i
+                    class="fas fa-arrow-left"></i> Back to Cities</button>
+            <div class="bg-white shadow-md px-5 py-2 rounded-full font-bold"><i
+                    class="fas fa-city text-emerald-600 mr-2"></i><span id="selectedCityName">Karachi</span></div>
+            <span class="step-indicator step-active">Step 1: City</span><span class="step-indicator">Step 2: Service</span>
+        </div>
+        <div class="form-card p-6">
+            <h2 class="text-xl font-bold mb-5"><i class="fas fa-concierge-bell text-blue-600 mr-2"></i> Which service do you
+                need?</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="servicesGrid"></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-md p-5 mb-8 border-l-8 border-l-amber-400 mt-5">
+            <h2 class="text-lg font-bold"><i class="fas fa-clock text-amber-500 mr-2"></i> Pending Cases — <span
+                    id="pendingCityName">Karachi</span></h2>
+            <div id="cityPendingCasesList" class="mt-3 space-y-2 text-sm"></div>
+        </div>
+    </div>
+
+    <!-- ======================= SCREEN 3: ENTRY FORM ======================= -->
+    <div id="screen3Form" class="max-w-7xl mx-auto hidden">
+        <div class="flex flex-wrap justify-between items-center mb-5 gap-3">
+            <button id="backToServiceScreenBtn"
+                class="bg-gray-200 hover:bg-gray-300 px-5 py-2 rounded-full font-medium flex items-center gap-2"><i
+                    class="fas fa-chevron-left"></i> Back to Services</button>
+            <div class="bg-white shadow-md px-4 py-2 rounded-full text-sm"><i
+                    class="fas fa-map-marker-alt text-emerald-600"></i> City: <strong id="formCityLabel">--</strong></div>
+            <div class="flex gap-2"><span class="step-indicator bg-green-100 text-green-800">✓ City</span><span
+                    class="step-indicator bg-green-100 text-green-800">✓ Service</span><span
+                    class="step-indicator step-active">Form</span></div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6>Total Permits</h6>
-                            <h3 id="totalPermits">{{ $summaryStats['total_permits'] ?? 0 }}</h3>
-                        </div>
-                        <i class="ti ti-license fs-1 text-success"></i>
-                    </div>
-                </div>
-            </div>
+        <!-- Vehicle & Party Details: two columns + comment box full width -->
+        <div class="form-card p-5 md:p-7 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 border-b pb-3 mb-5"><i class="fas fa-truck text-blue-600 mr-2"></i>
+                Vehicle & Party Details</h2>
+            <div id="dynamicCommonFieldsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6>Active Vehicles</h6>
-                            <h3 id="activeVehicles">{{ $summaryStats['active_vehicles'] ?? 0 }}</h3>
-                        </div>
-                        <i class="ti ti-car fs-1 text-danger"></i>
-                    </div>
-                </div>
+        <!-- DYNAMIC DETAILS SECTIONS (inline) -->
+        <div id="dynamicDetailsContainer" class="space-y-4 mb-6"></div>
+
+        <!-- Services Table (organized headers) -->
+        <div class="form-card p-5 md:p-7 mb-5">
+            <div class="flex justify-between items-center border-b pb-3 mb-4 flex-wrap gap-2">
+                <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-list-ul text-indigo-600 mr-2"></i> Services &
+                    Charges</h2>
+                <button id="addMoreServiceBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm flex items-center gap-1 shadow"><i
+                        class="fas fa-plus"></i> Add Another Service</button>
             </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse" id="finalServicesTable">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-3 text-left rounded-l-lg w-2/5">Service Type</th>
+                            <th class="p-3 text-left w-1/5">Amount (₨)</th>
+                            <th class="p-3 text-left rounded-r-lg w-2/5">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="finalServicesTableBody"></tbody>
+                </table>
+            </div>
+            <p class="text-xs text-gray-400 mt-3"><i class="fas fa-info-circle"></i> For Transfer, Alteration & File
+                Return, details will be auto-filled across services.</p>
         </div>
 
-        <!-- ================= BILLING SUMMARY CARDS ================= -->
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6>Total Revenue</h6>
-                            <h3 id="totalRevenue">Rs. {{ number_format($billingSummary['total_revenue'] ?? 0, 2) }}</h3>
-                        </div>
-                        <i class="ti ti-currency-rupee fs-1 text-success"></i>
-                    </div>
-                </div>
+        <!-- Totals Section -->
+        <div class="form-card p-5 md:p-7 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div><label class="block font-semibold">Total Amount (₨)</label><input type="number"
+                        id="finalTotalAmount" readonly class="w-full bg-gray-100 border rounded-xl p-3 font-bold"></div>
+                <div><label class="block font-semibold">Received Amount (₨)</label><input type="number"
+                        id="finalReceivedAmount" value="0" class="w-full border rounded-xl p-3"></div>
+                <div><label class="block font-semibold">Remaining Amount (₨)</label><input type="number"
+                        id="finalRemainingAmount" readonly
+                        class="w-full bg-gray-100 border rounded-xl p-3 font-bold text-rose-700"></div>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6>Pending Amount</h6>
-                            <h3 id="pendingAmount">Rs. {{ number_format($billingSummary['pending_payments'] ?? 0, 2) }}</h3>
-                        </div>
-                        <i class="ti ti-clock fs-1 text-warning"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6>Monthly Revenue</h6>
-                            <h3 id="monthlyRevenue">Rs. {{ number_format($billingSummary['monthly_revenue'] ?? 0, 2) }}</h3>
-                        </div>
-                        <i class="ti ti-chart-bar fs-1 text-info"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= CHARTS ================= -->
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between">
-                    <h5>Transfers Overview</h5>
-                    <div>
-                        <button class="btn btn-sm btn-primary" onclick="exportChartAsPDF()">Export PDF</button>
-                        <button class="btn btn-sm btn-success" onclick="exportChartAsExcel()">Export Excel</button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <canvas id="transferChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5>Permits Status</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="permitChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= WORK TYPE DISTRIBUTION ================= -->
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5>Work Type Distribution</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="workTypeChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= MONTHLY REVENUE CHART ================= -->
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5>Monthly Revenue Trend</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="revenueChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= RECENT TRANSFERS TABLE ================= -->
-        <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between">
-                    <h5>Recent Transfers</h5>
-                    <button class="btn btn-sm btn-info" onclick="refreshRecentTransfers()">
-                        <i class="ti ti-refresh"></i> Refresh
-                    </button>
-                </div>
-                <div class="card-body table-responsive">
-                    <table class="table table-bordered" id="recentTransfersTable">
-                        <thead>
-                            <tr>
-                                <th>Case No</th>
-                                <th>Vehicle Reg</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentTransfersBody">
-                            @isset($recentTransfers)
-                                @foreach($recentTransfers as $transfer)
-                                <tr>
-                                    <td>{{ $transfer['case_no'] }}</td>
-                                    <td>{{ $transfer['vehicle_reg_no'] }}</td>
-                                    <td>{{ $transfer['from_name'] }}</td>
-                                    <td>{{ $transfer['to_name'] }}</td>
-                                    <td>{{ $transfer['date'] }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $transfer['status'] == 'open' ? 'success' : 'danger' }}">
-                                            {{ ucfirst($transfer['status']) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            @endisset
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= RECENT CASES ================= -->
-        <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5>Recent Cases Activity</h5>
-                </div>
-                <div class="card-body">
-                    <div class="timeline" id="recentCasesTimeline">
-                        @isset($recentCases)
-                            @foreach($recentCases as $case)
-                            <div class="timeline-item">
-                                <div class="timeline-point bg-primary"></div>
-                                <div class="timeline-content">
-                                    <h6>{{ $case->case_no }} - {{ $case->vehicle_reg_no }}</h6>
-                                    <p class="mb-0">
-                                        Work Type: {{ $case->work_type }} |
-                                        Status: <span class="badge bg-{{ $case->status == 'open' ? 'success' : 'danger' }}">
-                                            {{ ucfirst($case->status) }}
-                                        </span>
-                                    </p>
-                                    <small class="text-muted">{{ $case->created_at->diffForHumans() }}</small>
-                                </div>
-                            </div>
-                            @endforeach
-                        @endisset
-                    </div>
-                </div>
-            </div>
+            <div class="mt-5 flex justify-end"><button id="finalSaveRecordBtn"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow"><i
+                        class="fas fa-save mr-2"></i> Save Record</button></div>
         </div>
     </div>
 @endsection
 
 @section('script')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Chart instances
-        let transferChart, permitChart, workTypeChart, revenueChart;
-        let refreshInterval = null;
+        // ---------- MOCK DATA ----------
+        const pendingPaymentsDB = [{
+                city: "Karachi",
+                service: "Transfer",
+                party: "Al-Rehman",
+                vehicle: "ABC-789",
+                amount: 12500
+            },
+            {
+                city: "Quetta",
+                service: "Route Permit",
+                party: "Northern Cargo",
+                vehicle: "LE-123",
+                amount: 8200
+            },
+            {
+                city: "Peshawar",
+                service: "FC",
+                party: "Jan Traders",
+                vehicle: "TB-4567",
+                amount: 5750
+            },
+            {
+                city: "Punjab",
+                service: "Tax",
+                party: "Zahid Ent.",
+                vehicle: "LEB-909",
+                amount: 3500
+            },
+            {
+                city: "Gilgit",
+                service: "Insurance",
+                party: "Northern Travels",
+                vehicle: "GIL-111",
+                amount: 6200
+            }
+        ];
+        const pendingCasesDB = [{
+                city: "Karachi",
+                service: "File Return",
+                title: "NIC mismatch",
+                desc: "Documents pending"
+            },
+            {
+                city: "Punjab",
+                service: "File Return",
+                title: "Tax period overdue",
+                desc: "Submit within 3 days"
+            },
+            {
+                city: "Gilgit",
+                service: "Insurance",
+                title: "Policy expired",
+                desc: "Renewal required"
+            },
+            {
+                city: "Lasbella",
+                service: "Route Permit",
+                title: "Permit renewal",
+                desc: "RTA approval"
+            }
+        ];
 
-        // Initialize charts on page load
-        document.addEventListener("DOMContentLoaded", function() {
-            initializeCharts();
-            setupAutoRefresh();
-        });
+        function normalizeCity(c) {
+            return (c === "Lahore") ? "Punjab" : c;
+        }
 
-        function initializeCharts() {
-            // Transfer Line Chart
-            const ctx1 = document.getElementById('transferChart');
-            transferChart = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: @json($transferChart['labels'] ?? []),
-                    datasets: [{
-                        label: 'Transfers',
-                        data: @json($transferChart['data'] ?? []),
-                        borderColor: 'rgb(59, 130, 246)',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                        }
-                    }
-                }
-            });
+        function renderFilteredItems() {
+            let city = document.getElementById('filterCity').value;
+            let serv = document.getElementById('filterService').value;
+            let payments = pendingPaymentsDB.filter(p => (city === 'all' || normalizeCity(p.city) === city) && (serv ===
+                'all' || p.service === serv));
+            let cases = pendingCasesDB.filter(c => (city === 'all' || normalizeCity(c.city) === city) && (serv === 'all' ||
+                c.service === serv));
+            document.getElementById('filteredPaymentsList').innerHTML = payments.length ? payments.map(p =>
+                `<div class="bg-rose-50 p-3 rounded-lg flex justify-between"><div><span class="font-medium">${p.city} - ${p.service}</span><br><span class="text-xs">${p.party} (${p.vehicle})</span></div><span class="font-bold text-rose-600">₨ ${p.amount}</span></div>`
+                ).join('') : '<div class="text-center text-gray-400 p-3">No payments</div>';
+            document.getElementById('filteredCasesList').innerHTML = cases.length ? cases.map(c =>
+                `<div class="bg-amber-50 p-3 rounded-lg"><div class="flex gap-2"><i class="fas fa-folder-open text-amber-500"></i><div><span class="font-medium">${c.city} - ${c.service}</span><br><span class="text-xs">${c.title} - ${c.desc}</span></div></div></div>`
+                ).join('') : '<div class="text-center text-gray-400 p-3">No cases</div>';
+        }
 
-            // Permit Pie Chart
-            const ctx2 = document.getElementById('permitChart');
-            permitChart = new Chart(ctx2, {
-                type: 'pie',
-                data: {
-                    labels: @json($permitStatus['labels'] ?? []),
-                    datasets: [{
-                        data: @json($permitStatus['data'] ?? []),
-                        backgroundColor: [
-                            'rgb(34, 197, 94)',
-                            'rgb(239, 68, 68)',
-                            'rgb(107, 114, 128)'
-                        ],
-                        borderWidth: 1,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        }
-                    }
-                }
-            });
+        // ---------- GLOBAL STATE ----------
+        let currentCity = '';
+        let currentServicesRows = []; // { id, serviceType, amount, detailsData }
+        let nextId = 1;
+        let updateTimeout = null;
 
-            // Work Type Chart
-            const ctx3 = document.getElementById('workTypeChart');
-            workTypeChart = new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: @json($workTypeDistribution['labels'] ?? []),
-                    datasets: [{
-                        label: 'Number of Cases',
-                        data: @json($workTypeDistribution['data'] ?? []),
-                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                        borderColor: 'rgb(59, 130, 246)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
+        // Store vehicle details separately to prevent clearing
+        let savedVehicleDetails = {
+            vehicleNo: '',
+            vehicleMake: '',
+            vehicleModel: '',
+            engineNo: '',
+            chassisNo: '',
+            partyName: '',
+            partyMobile: '',
+            date: '',
+            comment: ''
+        };
 
-            // Revenue Chart
-            const ctx4 = document.getElementById('revenueChart');
-            revenueChart = new Chart(ctx4, {
-                type: 'line',
-                data: {
-                    labels: @json($monthlyRevenue['labels'] ?? []),
-                    datasets: [{
-                        label: 'Revenue (Rs.)',
-                        data: @json($monthlyRevenue['data'] ?? []),
-                        borderColor: 'rgb(34, 197, 94)',
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    label += 'Rs. ' + context.parsed.y.toLocaleString();
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
+        // Save vehicle details before any re-render
+        function saveCurrentVehicleDetails() {
+            savedVehicleDetails.vehicleNo = document.getElementById('comm_vehicleNo')?.value || '';
+            savedVehicleDetails.vehicleMake = document.getElementById('comm_vehicleMake')?.value || '';
+            savedVehicleDetails.vehicleModel = document.getElementById('comm_vehicleModel')?.value || '';
+            savedVehicleDetails.engineNo = document.getElementById('comm_engineNo')?.value || '';
+            savedVehicleDetails.chassisNo = document.getElementById('comm_chassisNo')?.value || '';
+            savedVehicleDetails.partyName = document.getElementById('comm_partyName')?.value || '';
+            savedVehicleDetails.partyMobile = document.getElementById('comm_partyMobile')?.value || '';
+            savedVehicleDetails.date = document.getElementById('comm_date')?.value || '';
+            savedVehicleDetails.comment = document.getElementById('comm_comment')?.value || '';
+        }
+
+        // Restore vehicle details after re-render
+        function restoreVehicleDetails() {
+            const vehicleNoInput = document.getElementById('comm_vehicleNo');
+            const vehicleMakeInput = document.getElementById('comm_vehicleMake');
+            const vehicleModelInput = document.getElementById('comm_vehicleModel');
+            const engineNoInput = document.getElementById('comm_engineNo');
+            const chassisNoInput = document.getElementById('comm_chassisNo');
+            const partyNameInput = document.getElementById('comm_partyName');
+            const partyMobileInput = document.getElementById('comm_partyMobile');
+            const dateInput = document.getElementById('comm_date');
+            const commentInput = document.getElementById('comm_comment');
+
+            if (vehicleNoInput) vehicleNoInput.value = savedVehicleDetails.vehicleNo;
+            if (vehicleMakeInput) vehicleMakeInput.value = savedVehicleDetails.vehicleMake;
+            if (vehicleModelInput) vehicleModelInput.value = savedVehicleDetails.vehicleModel;
+            if (engineNoInput) engineNoInput.value = savedVehicleDetails.engineNo;
+            if (chassisNoInput) chassisNoInput.value = savedVehicleDetails.chassisNo;
+            if (partyNameInput) partyNameInput.value = savedVehicleDetails.partyName;
+            if (partyMobileInput) partyMobileInput.value = savedVehicleDetails.partyMobile;
+            if (dateInput && !savedVehicleDetails.date) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            } else if (dateInput) {
+                dateInput.value = savedVehicleDetails.date;
+            }
+            if (commentInput) commentInput.value = savedVehicleDetails.comment;
+        }
+
+        // Helper: generate details fields HTML (with prefilled values)
+        function generateDetailsHTML(serviceType, existingData = {}) {
+            if (serviceType === 'Transfer' || serviceType === 'Alteration' || serviceType === 'File Return') {
+                return `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-semibold">From Name</label><input type="text" class="detail-fromName w-full border rounded-lg p-2" value="${escapeHtml(existingData.fromName || '')}"></div>
+                        <div><label class="block text-sm font-semibold">From S/O</label><input type="text" class="detail-fromSo w-full border rounded-lg p-2" value="${escapeHtml(existingData.fromSo || '')}"></div>
+                        <div><label class="block text-sm font-semibold">From NIC No</label><input type="text" class="detail-fromNic w-full border rounded-lg p-2" value="${escapeHtml(existingData.fromNic || '')}"></div>
+                        <div><label class="block text-sm font-semibold">To Name</label><input type="text" class="detail-toName w-full border rounded-lg p-2" value="${escapeHtml(existingData.toName || '')}"></div>
+                        <div><label class="block text-sm font-semibold">To S/O</label><input type="text" class="detail-toSo w-full border rounded-lg p-2" value="${escapeHtml(existingData.toSo || '')}"></div>
+                        <div><label class="block text-sm font-semibold">To NIC No</label><input type="text" class="detail-toNic w-full border rounded-lg p-2" value="${escapeHtml(existingData.toNic || '')}"></div>
+                    </div>
+                `;
+            } else if (serviceType === 'Route Permit') {
+                return `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="col-span-2"><label class="block text-sm font-semibold">Details (Route)</label><textarea class="detail-details w-full border rounded-lg p-2" rows="2">${escapeHtml(existingData.details || '')}</textarea></div><div><label>RTA/PTA</label><input class="detail-rtaPta w-full border rounded-lg p-2" value="${escapeHtml(existingData.rtaPta || '')}"></div></div>`;
+            } else if (serviceType === 'FC') {
+                return `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>Truck/Trailer</label><select class="detail-truckType w-full border rounded-lg p-2"><option ${existingData.truckType === 'Truck' ? 'selected' : ''}>Truck</option><option ${existingData.truckType === 'Trailer' ? 'selected' : ''}>Trailer</option></select></div><div class="col-span-2"><label>FC Details</label><textarea class="detail-fcDetails w-full border rounded-lg p-2" rows="2">${escapeHtml(existingData.fcDetails || '')}</textarea></div></div>`;
+            } else if (serviceType === 'Insurance') {
+                return `<div><label>Remarks</label><textarea class="detail-remarks w-full border rounded-lg p-2" rows="3">${escapeHtml(existingData.remarks || '')}</textarea></div>`;
+            } else if (serviceType === 'Tax') {
+                return `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label>From (Date/Period)</label><input class="detail-fromPeriod w-full border rounded-lg p-2" value="${escapeHtml(existingData.fromPeriod || '')}" placeholder="e.g., 01-Jan-2025"></div>
+                            <div><label>Upto (Date/Period)</label><input class="detail-upto w-full border rounded-lg p-2" value="${escapeHtml(existingData.upto || '')}" placeholder="e.g., 31-Dec-2025"></div>
+                        </div>`;
+            } else if (serviceType === 'Others') {
+                return `<div><label>Other Details</label><textarea class="detail-otherDetails w-full border rounded-lg p-2" rows="3" placeholder="Enter extra details">${escapeHtml(existingData.otherDetails || '')}</textarea></div>`;
+            }
+            return `<div class="text-gray-500 text-sm">No additional fields.</div>`;
+        }
+
+        // Helper to escape HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
             });
         }
 
-        // Setup auto-refresh
-        function setupAutoRefresh() {
-            document.querySelectorAll('input[name="refreshInterval"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (refreshInterval) {
-                        clearInterval(refreshInterval);
-                        refreshInterval = null;
-                    }
+        // Update details data from DOM without re-rendering
+        function updateDetailsDataFromDOM(rowId) {
+            const row = currentServicesRows.find(r => r.id === rowId);
+            if (!row) return;
 
-                    const interval = parseInt(this.value);
-                    if (interval > 0) {
-                        refreshInterval = setInterval(refreshAllData, interval);
+            const section = document.getElementById(`details-section-${rowId}`);
+            if (!section) return;
+
+            const wrapper = section.querySelector('.details-fields-wrapper');
+            if (!wrapper) return;
+
+            const serviceType = row.serviceType;
+
+            if (serviceType === 'Transfer' || serviceType === 'Alteration' || serviceType === 'File Return') {
+                row.detailsData = {
+                    fromName: wrapper.querySelector('.detail-fromName')?.value || '',
+                    fromSo: wrapper.querySelector('.detail-fromSo')?.value || '',
+                    fromNic: wrapper.querySelector('.detail-fromNic')?.value || '',
+                    toName: wrapper.querySelector('.detail-toName')?.value || '',
+                    toSo: wrapper.querySelector('.detail-toSo')?.value || '',
+                    toNic: wrapper.querySelector('.detail-toNic')?.value || ''
+                };
+            } else if (serviceType === 'Route Permit') {
+                row.detailsData = {
+                    details: wrapper.querySelector('.detail-details')?.value || '',
+                    rtaPta: wrapper.querySelector('.detail-rtaPta')?.value || ''
+                };
+            } else if (serviceType === 'FC') {
+                row.detailsData = {
+                    truckType: wrapper.querySelector('.detail-truckType')?.value || 'Truck',
+                    fcDetails: wrapper.querySelector('.detail-fcDetails')?.value || ''
+                };
+            } else if (serviceType === 'Insurance') {
+                row.detailsData = {
+                    remarks: wrapper.querySelector('.detail-remarks')?.value || ''
+                };
+            } else if (serviceType === 'Tax') {
+                row.detailsData = {
+                    fromPeriod: wrapper.querySelector('.detail-fromPeriod')?.value || '',
+                    upto: wrapper.querySelector('.detail-upto')?.value || ''
+                };
+            } else if (serviceType === 'Others') {
+                row.detailsData = {
+                    otherDetails: wrapper.querySelector('.detail-otherDetails')?.value || ''
+                };
+            }
+        }
+
+        // Sync only Transfer-like details (does NOT affect other service types)
+        function syncTransferDetailsOnly() {
+            const transferLikeRows = currentServicesRows.filter(r => ['Transfer', 'Alteration', 'File Return'].includes(r.serviceType));
+            if (transferLikeRows.length <= 1) return;
+
+            let activeElement = document.activeElement;
+            let masterData = null;
+            let sourceRowId = null;
+
+            for (let row of transferLikeRows) {
+                const section = document.getElementById(`details-section-${row.id}`);
+                if (section && section.contains(activeElement)) {
+                    sourceRowId = row.id;
+                    const wrapper = section.querySelector('.details-fields-wrapper');
+                    if (wrapper) {
+                        masterData = {
+                            fromName: wrapper.querySelector('.detail-fromName')?.value || '',
+                            fromSo: wrapper.querySelector('.detail-fromSo')?.value || '',
+                            fromNic: wrapper.querySelector('.detail-fromNic')?.value || '',
+                            toName: wrapper.querySelector('.detail-toName')?.value || '',
+                            toSo: wrapper.querySelector('.detail-toSo')?.value || '',
+                            toNic: wrapper.querySelector('.detail-toNic')?.value || ''
+                        };
+                    }
+                    break;
+                }
+            }
+
+            if (!masterData && transferLikeRows[0] && transferLikeRows[0].detailsData) {
+                masterData = { ...transferLikeRows[0].detailsData };
+            }
+            if (!masterData) return;
+
+            for (let row of transferLikeRows) {
+                if (row.id === sourceRowId) continue;
+                if (!row.detailsData) row.detailsData = {};
+                row.detailsData.fromName = masterData.fromName;
+                row.detailsData.fromSo = masterData.fromSo;
+                row.detailsData.fromNic = masterData.fromNic;
+                row.detailsData.toName = masterData.toName;
+                row.detailsData.toSo = masterData.toSo;
+                row.detailsData.toNic = masterData.toNic;
+
+                const targetSection = document.getElementById(`details-section-${row.id}`);
+                if (targetSection) {
+                    const targetWrapper = targetSection.querySelector('.details-fields-wrapper');
+                    if (targetWrapper) {
+                        const fromNameInput = targetWrapper.querySelector('.detail-fromName');
+                        const fromSoInput = targetWrapper.querySelector('.detail-fromSo');
+                        const fromNicInput = targetWrapper.querySelector('.detail-fromNic');
+                        const toNameInput = targetWrapper.querySelector('.detail-toName');
+                        const toSoInput = targetWrapper.querySelector('.detail-toSo');
+                        const toNicInput = targetWrapper.querySelector('.detail-toNic');
+
+                        if (fromNameInput && fromNameInput.value !== masterData.fromName) fromNameInput.value = masterData.fromName;
+                        if (fromSoInput && fromSoInput.value !== masterData.fromSo) fromSoInput.value = masterData.fromSo;
+                        if (fromNicInput && fromNicInput.value !== masterData.fromNic) fromNicInput.value = masterData.fromNic;
+                        if (toNameInput && toNameInput.value !== masterData.toName) toNameInput.value = masterData.toName;
+                        if (toSoInput && toSoInput.value !== masterData.toSo) toSoInput.value = masterData.toSo;
+                        if (toNicInput && toNicInput.value !== masterData.toNic) toNicInput.value = masterData.toNic;
+                    }
+                }
+            }
+        }
+
+        function handleTransferInput(event) {
+            if (updateTimeout) clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+                syncTransferDetailsOnly();
+            }, 30);
+        }
+
+        function handleServiceInput(rowId, serviceType) {
+            if (updateTimeout) clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+                updateDetailsDataFromDOM(rowId);
+            }, 30);
+        }
+
+        // render all inline sections
+        function renderAllDetailsSections() {
+            const container = document.getElementById('dynamicDetailsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            currentServicesRows.forEach((row) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'service-details-section bg-yellow-50 p-5 rounded-xl shadow-sm border border-yellow-200';
+                sectionDiv.id = `details-section-${row.id}`;
+                sectionDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-base font-bold text-amber-800"><i class="fas fa-file-alt mr-2"></i> ${row.serviceType} — Details</h3>
+                        <button class="remove-details-btn text-gray-400 hover:text-red-500 text-sm" data-id="${row.id}"><i class="fas fa-trash-alt"></i> Remove Service</button>
+                    </div>
+                    <div class="details-fields-wrapper" data-service-type="${row.serviceType}" data-row-id="${row.id}">
+                        ${generateDetailsHTML(row.serviceType, row.detailsData || {})}
+                    </div>
+                `;
+                container.appendChild(sectionDiv);
+            });
+
+            for (let row of currentServicesRows) {
+                const section = document.getElementById(`details-section-${row.id}`);
+                if (!section) continue;
+                const wrapper = section.querySelector('.details-fields-wrapper');
+                if (!wrapper) continue;
+
+                const isTransferLike = ['Transfer', 'Alteration', 'File Return'].includes(row.serviceType);
+                const inputs = wrapper.querySelectorAll('input, textarea, select');
+
+                inputs.forEach(input => {
+                    input.removeEventListener('input', isTransferLike ? handleTransferInput : () => handleServiceInput(row.id, row.serviceType));
+                    if (isTransferLike) {
+                        input.addEventListener('input', handleTransferInput);
+                    } else {
+                        input.addEventListener('input', () => handleServiceInput(row.id, row.serviceType));
                     }
                 });
+            }
+
+            document.querySelectorAll('.remove-details-btn').forEach(btn => {
+                btn.removeEventListener('click', handleRemoveClick);
+                btn.addEventListener('click', handleRemoveClick);
             });
         }
 
-        // Refresh all data
-        async function refreshAllData() {
-            await Promise.all([
-                refreshSummaryStats(),
-                refreshTransferChart(),
-                refreshPermitChart(),
-                refreshRecentTransfers(),
-                refreshWorkTypeChart(),
-                refreshRevenueChart()
-            ]);
-        }
-
-        // Refresh summary statistics
-        async function refreshSummaryStats() {
-            try {
-                const response = await fetch('{{ route("dashboard.refresh") }}?type=summary');
-                const data = await response.json();
-
-                // Update basic stats
-                document.getElementById('totalTransfers').textContent = data.total_transfers || 0;
-                document.getElementById('totalAlterations').textContent = data.total_alterations || 0;
-                document.getElementById('totalPermits').textContent = data.total_permits || 0;
-                document.getElementById('activeVehicles').textContent = data.active_vehicles || 0;
-
-                // UPDATE BILLING DATA - THIS IS WHAT YOU'RE MISSING!
-                document.getElementById('totalRevenue').textContent = 'Rs. ' + (data.total_revenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                document.getElementById('pendingAmount').textContent = 'Rs. ' + (data.pending_payments || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                document.getElementById('monthlyRevenue').textContent = 'Rs. ' + (data.monthly_revenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            } catch (error) {
-                console.error('Error refreshing summary stats:', error);
+        function handleRemoveClick(e) {
+            const id = parseInt(e.currentTarget.getAttribute('data-id'));
+            if (currentServicesRows.length === 1) {
+                alert("At least one service required.");
+                return;
             }
+            currentServicesRows = currentServicesRows.filter(r => r.id !== id);
+            renderFinalServicesTable();
+            renderAllDetailsSections();
+            updateFinalTotals();
+            updateCommonFieldsBasedOnPrimaryService();
         }
 
-        // Refresh transfer chart
-        async function refreshTransferChart() {
-            try {
-                const response = await fetch('{{ route("dashboard.refresh") }}?type=transfers');
-                const data = await response.json();
+        function renderFinalServicesTable() {
+            const tbody = document.getElementById('finalServicesTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
 
-                transferChart.data.labels = data.labels || [];
-                transferChart.data.datasets[0].data = data.data || [];
-                transferChart.update();
-            } catch (error) {
-                console.error('Error refreshing transfer chart:', error);
+            currentServicesRows.forEach((row) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-gray-50';
+
+                const tdType = document.createElement('td');
+                tdType.className = 'p-2';
+                const select = document.createElement('select');
+                select.className = 'border rounded-lg p-2 text-sm w-full';
+                const allSvcs = ['Transfer', 'Alteration', 'Route Permit', 'FC', 'Insurance', 'Tax', 'File Return', 'Others'];
+                allSvcs.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    option.innerText = opt;
+                    if (row.serviceType === opt) option.selected = true;
+                    select.appendChild(option);
+                });
+                select.addEventListener('change', (e) => {
+                    const newType = e.target.value;
+                    const oldType = row.serviceType;
+
+                    row.serviceType = newType;
+                    const wasTransferLike = ['Transfer', 'Alteration', 'File Return'].includes(oldType);
+                    const isTransferLike = ['Transfer', 'Alteration', 'File Return'].includes(newType);
+
+                    if (!(wasTransferLike && isTransferLike)) {
+                        row.detailsData = {};
+                    }
+
+                    renderFinalServicesTable();
+                    renderAllDetailsSections();
+                    updateCommonFieldsBasedOnPrimaryService();
+                    updateFinalTotals();
+                });
+                tdType.appendChild(select);
+
+                const tdAmount = document.createElement('td');
+                tdAmount.className = 'p-2';
+                const amountInput = document.createElement('input');
+                amountInput.type = 'number';
+                amountInput.value = row.amount || 0;
+                amountInput.className = 'amount-input border rounded-lg p-2 text-right';
+                amountInput.addEventListener('input', (e) => {
+                    row.amount = parseFloat(e.target.value) || 0;
+                    updateFinalTotals();
+                });
+                tdAmount.appendChild(amountInput);
+
+                const tdAction = document.createElement('td');
+                tdAction.className = 'p-2';
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '<i class="fas fa-trash-alt text-red-500 mr-1"></i> Remove';
+                removeBtn.className = 'text-xs bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100';
+                removeBtn.addEventListener('click', () => {
+                    if (currentServicesRows.length === 1) {
+                        alert("At least one service required");
+                        return;
+                    }
+                    currentServicesRows = currentServicesRows.filter(r => r.id !== row.id);
+                    renderFinalServicesTable();
+                    renderAllDetailsSections();
+                    updateFinalTotals();
+                    updateCommonFieldsBasedOnPrimaryService();
+                });
+                tdAction.appendChild(removeBtn);
+
+                tr.appendChild(tdType);
+                tr.appendChild(tdAmount);
+                tr.appendChild(tdAction);
+                tbody.appendChild(tr);
+            });
+            updateFinalTotals();
+        }
+
+        function updateFinalTotals() {
+            let total = currentServicesRows.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+            document.getElementById('finalTotalAmount').value = total.toFixed(2);
+            let received = parseFloat(document.getElementById('finalReceivedAmount').value) || 0;
+            document.getElementById('finalRemainingAmount').value = (total - received).toFixed(2);
+        }
+
+        function updateCommonFieldsBasedOnPrimaryService() {
+            // Save current vehicle details before changing HTML
+            saveCurrentVehicleDetails();
+
+            let primary = currentServicesRows.length ? currentServicesRows[0].serviceType : 'Transfer';
+            const isFull = ['Transfer', 'Alteration', 'File Return'].includes(primary);
+            const container = document.getElementById('dynamicCommonFieldsContainer');
+
+            if (isFull) {
+                container.innerHTML = `
+                    <div><label class="required-dot">Vehicle No</label><input id="comm_vehicleNo" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Vehicle Make</label><input id="comm_vehicleMake" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Vehicle Model</label><input id="comm_vehicleModel" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Engine No</label><input id="comm_engineNo" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Chassis No</label><input id="comm_chassisNo" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Party Name</label><input id="comm_partyName" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Party Mobile No</label><input id="comm_partyMobile" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Date</label><input type="date" id="comm_date" class="w-full border rounded-xl p-2"></div>
+                    <div class="md:col-span-2"><label>Comment / Remarks</label><textarea id="comm_comment" rows="2" class="w-full border rounded-xl p-2" placeholder="Any additional comment..."></textarea></div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div><label class="required-dot">Vehicle No</label><input id="comm_vehicleNo" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Party Name</label><input id="comm_partyName" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Party Mobile No</label><input id="comm_partyMobile" class="w-full border rounded-xl p-2"></div>
+                    <div><label>Date</label><input type="date" id="comm_date" class="w-full border rounded-xl p-2"></div>
+                    <div class="md:col-span-2"><label>Comment / Remarks</label><textarea id="comm_comment" rows="2" class="w-full border rounded-xl p-2" placeholder="Any additional comment..."></textarea></div>
+                `;
             }
+
+            // Restore saved vehicle details
+            restoreVehicleDetails();
+
+            const today = new Date().toISOString().split('T')[0];
+            const dateField = document.getElementById('comm_date');
+            if (dateField && !dateField.value) dateField.value = today;
         }
 
-        // Refresh permit chart
-        async function refreshPermitChart() {
-            try {
-                const response = await fetch('{{ route("dashboard.refresh") }}?type=permits');
-                const data = await response.json();
+        function addServiceRow(serviceType = 'Transfer') {
+            const newId = nextId++;
+            const newRow = {
+                id: newId,
+                serviceType: serviceType,
+                amount: 0,
+                detailsData: {}
+            };
 
-                permitChart.data.labels = data.labels || [];
-                permitChart.data.datasets[0].data = data.data || [];
-                permitChart.update();
-            } catch (error) {
-                console.error('Error refreshing permit chart:', error);
-            }
-        }
+            // Save current vehicle details before any potential re-render
+            saveCurrentVehicleDetails();
 
-        // Refresh work type chart
-        async function refreshWorkTypeChart() {
-            try {
-                const response = await fetch('{{ route("dashboard.refresh") }}?type=work_types');
-                const data = await response.json();
-
-                workTypeChart.data.labels = data.labels || [];
-                workTypeChart.data.datasets[0].data = data.data || [];
-                workTypeChart.update();
-            } catch (error) {
-                console.error('Error refreshing work type chart:', error);
-            }
-        }
-
-        // Refresh revenue chart
-        async function refreshRevenueChart() {
-            try {
-                const response = await fetch('{{ route("dashboard.refresh") }}?type=revenue');
-                const data = await response.json();
-
-                revenueChart.data.labels = data.labels || [];
-                revenueChart.data.datasets[0].data = data.data || [];
-                revenueChart.update();
-            } catch (error) {
-                console.error('Error refreshing revenue chart:', error);
-            }
-        }
-
-        // Refresh recent transfers table
-        async function refreshRecentTransfers() {
-            try {
-                const response = await fetch('{{ route("dashboard.refresh") }}?type=recent');
-                const transfers = await response.json();
-
-                const tbody = document.getElementById('recentTransfersBody');
-                tbody.innerHTML = '';
-
-                if (transfers && transfers.length > 0) {
-                    transfers.forEach(transfer => {
-                        const row = tbody.insertRow();
-                        row.innerHTML = `
-                            <td>${transfer.case_no || 'N/A'}</td>
-                            <td>${transfer.vehicle_reg_no || 'N/A'}</td>
-                            <td>${transfer.from_name || 'N/A'}</td>
-                            <td>${transfer.to_name || 'N/A'}</td>
-                            <td>${transfer.date || 'N/A'}</td>
-                            <td>
-                                <span class="badge bg-${transfer.status === 'open' ? 'success' : 'danger'}">
-                                    ${transfer.status ? transfer.status.charAt(0).toUpperCase() + transfer.status.slice(1) : 'N/A'}
-                                </span>
-                            </td>
-                        `;
-                    });
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No recent transfers found</td></tr>';
+            if (['Transfer', 'Alteration', 'File Return'].includes(serviceType)) {
+                const existingTransfer = currentServicesRows.find(r => ['Transfer', 'Alteration', 'File Return'].includes(r.serviceType));
+                if (existingTransfer && existingTransfer.detailsData) {
+                    newRow.detailsData = { ...existingTransfer.detailsData };
                 }
-            } catch (error) {
-                console.error('Error refreshing recent transfers:', error);
             }
+
+            currentServicesRows.push(newRow);
+            renderFinalServicesTable();
+            renderAllDetailsSections();
+            updateCommonFieldsBasedOnPrimaryService();
+            updateFinalTotals();
+
+            // Ensure vehicle details are restored after all re-renders
+            setTimeout(() => restoreVehicleDetails(), 10);
         }
 
-        // Export functions
-        function exportChartAsPDF() {
-            alert('PDF export functionality would be implemented here');
+        // Function to collect all form data
+        function collectAllFormData() {
+            for (let row of currentServicesRows) {
+                updateDetailsDataFromDOM(row.id);
+            }
+
+            const commonData = {
+                city: currentCity,
+                vehicleNo: document.getElementById('comm_vehicleNo')?.value || '',
+                partyName: document.getElementById('comm_partyName')?.value || '',
+                partyMobile: document.getElementById('comm_partyMobile')?.value || '',
+                date: document.getElementById('comm_date')?.value || '',
+                comment: document.getElementById('comm_comment')?.value || ''
+            };
+
+            const vehicleMake = document.getElementById('comm_vehicleMake');
+            const vehicleModel = document.getElementById('comm_vehicleModel');
+            const engineNo = document.getElementById('comm_engineNo');
+            const chassisNo = document.getElementById('comm_chassisNo');
+
+            if (vehicleMake) commonData.vehicleMake = vehicleMake.value;
+            if (vehicleModel) commonData.vehicleModel = vehicleModel.value;
+            if (engineNo) commonData.engineNo = engineNo.value;
+            if (chassisNo) commonData.chassisNo = chassisNo.value;
+
+            const services = currentServicesRows.map(row => ({
+                id: row.id,
+                serviceType: row.serviceType,
+                amount: row.amount,
+                details: row.detailsData || {}
+            }));
+
+            const totals = {
+                totalAmount: parseFloat(document.getElementById('finalTotalAmount').value) || 0,
+                receivedAmount: parseFloat(document.getElementById('finalReceivedAmount').value) || 0,
+                remainingAmount: parseFloat(document.getElementById('finalRemainingAmount').value) || 0
+            };
+
+            return {
+                common: commonData,
+                services: services,
+                totals: totals,
+                submittedAt: new Date().toISOString()
+            };
         }
 
-        function exportChartAsExcel() {
-            alert('Excel export functionality would be implemented here');
+        function loadCityPendingCases(city) {
+            const filtered = pendingCasesDB.filter(c => normalizeCity(c.city) === city);
+            const container = document.getElementById('cityPendingCasesList');
+            container.innerHTML = filtered.length ? filtered.map(c =>
+                `<div class="flex gap-2 border-b pb-2"><i class="fas fa-exclamation-circle text-amber-500"></i><div><span class="font-medium">${c.service} - ${c.title}</span><br><span class="text-xs">${c.desc}</span></div></div>`
+                ).join('') : '<div class="text-gray-400">No pending cases</div>';
+            document.getElementById('pendingCityName').innerText = city;
         }
+
+        function showScreen2(city) {
+            currentCity = city;
+            document.getElementById('selectedCityName').innerText = city;
+            loadCityPendingCases(city);
+            const grid = document.getElementById('servicesGrid');
+            const services = ['Transfer', 'Alteration', 'Route Permit', 'FC', 'Insurance', 'Tax', 'File Return', 'Others'];
+            grid.innerHTML = '';
+            services.forEach(serv => {
+                const card = document.createElement('div');
+                card.className = 'service-card bg-white border p-4 rounded-xl shadow-sm text-center';
+                card.innerHTML = `<i class="fas ${serv === 'Transfer' ? 'fa-exchange-alt' : serv === 'Route Permit' ? 'fa-road' : serv === 'FC' ? 'fa-truck' : serv === 'Insurance' ? 'fa-shield-alt' : serv === 'Tax' ? 'fa-money-bill-wave' : serv === 'File Return' ? 'fa-folder-open' : 'fa-ellipsis-h'} text-3xl text-blue-600 mb-2"></i><h3 class="font-bold">${serv}</h3>`;
+                card.addEventListener('click', () => {
+                    currentServicesRows = [];
+                    const newId = nextId++;
+                    currentServicesRows.push({
+                        id: newId,
+                        serviceType: serv,
+                        amount: 0,
+                        detailsData: {}
+                    });
+                    renderFinalServicesTable();
+                    renderAllDetailsSections();
+                    updateCommonFieldsBasedOnPrimaryService();
+                    document.getElementById('formCityLabel').innerText = currentCity;
+                    document.getElementById('finalReceivedAmount').value = '0';
+                    updateFinalTotals();
+                    document.getElementById('screen2Service').classList.add('hidden');
+                    document.getElementById('screen3Form').classList.remove('hidden');
+                });
+                grid.appendChild(card);
+            });
+            document.getElementById('screen1Dashboard').classList.add('hidden');
+            document.getElementById('screen2Service').classList.remove('hidden');
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.city-card').forEach(card => card.addEventListener('click', () => showScreen2(card.getAttribute('data-city'))));
+        document.getElementById('backToCitiesBtn').addEventListener('click', () => {
+            document.getElementById('screen2Service').classList.add('hidden');
+            document.getElementById('screen1Dashboard').classList.remove('hidden');
+            renderFilteredItems();
+        });
+        document.getElementById('backToServiceScreenBtn').addEventListener('click', () => {
+            document.getElementById('screen3Form').classList.add('hidden');
+            showScreen2(currentCity);
+        });
+        document.getElementById('addMoreServiceBtn').addEventListener('click', () => {
+            addServiceRow(currentServicesRows[0]?.serviceType || 'Transfer');
+        });
+        document.getElementById('finalReceivedAmount').addEventListener('input', updateFinalTotals);
+        document.getElementById('applyFilterBtn').addEventListener('click', renderFilteredItems);
+
+        document.getElementById('finalSaveRecordBtn').addEventListener('click', () => {
+            const vehicle = document.getElementById('comm_vehicleNo')?.value;
+            if (!vehicle) {
+                alert("Please fill Vehicle Number");
+                return;
+            }
+
+            const formData = collectAllFormData();
+            console.log('Form Data Submitted:', formData);
+
+            fetch('/api/cases/store', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Server response:', data);
+                alert('Data sent to server successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error sending data to server.');
+            });
+        });
+
+        renderFilteredItems();
     </script>
-
-    <style>
-        .timeline {
-            position: relative;
-            padding-left: 30px;
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .timeline-point {
-            position: absolute;
-            left: -30px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            top: 5px;
-        }
-
-        .timeline-point.bg-primary {
-            background-color: #3b82f6;
-        }
-
-        .timeline-content {
-            padding-left: 15px;
-            border-left: 2px solid #e5e7eb;
-        }
-
-        .card {
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
-    </style>
 @endsection

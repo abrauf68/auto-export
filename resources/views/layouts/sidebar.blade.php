@@ -2,7 +2,7 @@
     <div class="app-brand demo">
         <a href="{{ route('dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo">
-                <img height="40px" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="{{ env('APP_NAME') }}">
+                <img style="height: 35px;" src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="{{ env('APP_NAME') }}">
             </span>
             {{-- <span class="app-brand-text demo menu-text fw-bold">{{\App\Helpers\Helper::getCompanyName()}}</span> --}}
         </a>
@@ -21,6 +21,12 @@
             <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-smart-home"></i>
                 <div>{{ __('Dashboard') }}</div>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('dashboard.stats') ? 'active' : '' }}">
+            <a href="{{ route('dashboard.stats') }}" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-smart-home"></i>
+                <div>{{ __('Dashboard Stats') }}</div>
             </a>
         </li>
 
