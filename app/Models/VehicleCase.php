@@ -62,6 +62,16 @@ class VehicleCase extends Model
         return $this->hasOne(CaseFitness::class, 'vehicle_case_id');
     }
 
+    public function fileReturn()
+    {
+        return $this->hasOne(CaseFileReturn::class, 'vehicle_case_id');
+    }
+
+    public function other()
+    {
+        return $this->hasOne(CaseOther::class, 'vehicle_case_id');
+    }
+
     public function billing()
     {
         return $this->hasOne(Billing::class, 'vehicle_case_id');

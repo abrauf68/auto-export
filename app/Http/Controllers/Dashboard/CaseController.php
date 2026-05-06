@@ -347,7 +347,7 @@ class CaseController extends Controller
     {
         $this->authorize('view case');
         try {
-            $case = VehicleCase::with('transfer', 'alteration', 'tax', 'insurance', 'permit', 'fitness')->findOrFail($id);
+            $case = VehicleCase::with('transfer', 'alteration', 'tax', 'insurance', 'permit', 'fitness', 'fileReturn', 'other')->findOrFail($id);
             return view('dashboard.cases.show', compact('case'));
         } catch (\Throwable $th) {
             // throw $th;
