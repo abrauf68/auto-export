@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('case_permits', function (Blueprint $table) {
             $table->id();
             $table->foreignId('vehicle_case_id')->constrained('vehicle_cases')->cascadeOnDelete();
-            $table->string('region');
-            $table->string('docs')->nullable();
-            $table->date('expiry_date')->nullable();
+            $table->enum('type', ['RTA', 'PTA', 'Others'])->nullable();
+            $table->text('details')->nullable();
             $table->timestamps();
         });
     }

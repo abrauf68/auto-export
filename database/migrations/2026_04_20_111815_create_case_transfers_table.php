@@ -19,20 +19,11 @@ return new class extends Migration
             $table->string('from_name');
             $table->string('from_s_o');
             $table->string('from_nic');
-            $table->boolean('from_biometric')->default(0);
 
             // To
             $table->string('to_name');
             $table->string('to_s_o');
             $table->string('to_nic');
-            $table->boolean('to_biometric')->default(0);
-
-            // Vehicle
-            $table->string('engine_no')->nullable();
-            $table->string('chassis_no')->nullable();
-            $table->string('wheels')->nullable();
-            $table->string('weight')->nullable();
-            $table->string('last_tax')->nullable();
 
             $table->timestamps();
         });

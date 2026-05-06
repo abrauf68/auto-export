@@ -42,7 +42,7 @@
                                 @foreach ($cases as $case)
                                     <option value="{{ $case->id }}"
                                         {{ $billing->vehicle_case_id == $case->id ? 'selected' : '' }}>
-                                        {{ $case->case_no }}
+                                        {{ $case->vehicle_no }} - {{ $case->party_name }}
                                     </option>
                                 @endforeach
                             </select>

@@ -42,7 +42,7 @@
                                 class="form-select select2 @error('vehicle_case_id') is-invalid @enderror" id="vehicle_case_id" required>
                                 <option value="" selected disabled>Select Case</option>
                                 @foreach ($cases as $case)
-                                    <option value="{{ $case->id }}">{{ $case->case_no }}</option>
+                                    <option value="{{ $case->id }}">{{ $case->vehicle_no }} - {{ $case->party_name }}</option>
                                 @endforeach
                             </select>
                             @error('vehicle_case_id')

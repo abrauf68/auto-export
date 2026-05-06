@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CaseAlteration extends Model
+class CaseFileReturn extends Model
 {
     use HasFactory;
+
+    protected $table = 'case_file_returns';
 
     protected $fillable = [
         'vehicle_case_id',

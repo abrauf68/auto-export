@@ -12,9 +12,24 @@ class VehicleCase extends Model
     protected $table = 'vehicle_cases';
 
     protected $fillable = [
-        'case_no', 'vehicle_reg_no', 'make', 'year', 'submitted_by',
-        'mobile_no', 'submission_date', 'tentative_return_date',
-        'case_refer_to', 'work_type', 'status'
+        // Common Info
+        'city',
+        'vehicle_no',
+        'vehicle_make',
+        'vehicle_model',
+        'engine_no',
+        'chassis_no',
+
+        // Party Info
+        'party_name',
+        'party_mobile',
+
+        // Case Info
+        'case_date',
+        'comment',
+
+        // Tracking
+        'submitted_at',
     ];
 
     public function transfer()

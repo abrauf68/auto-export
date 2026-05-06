@@ -28,7 +28,7 @@ class DashboardServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Share dashboard data with all views that need it
-        View::composer('dashboard.index', function ($view) {
+        View::composer('dashboard.dashboard-stats', function ($view) {
             if (auth()->check()) {
                 $view->with([
                     'summaryStats' => $this->getSummaryStats(),

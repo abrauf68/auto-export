@@ -367,21 +367,13 @@
         <!-- ===== CUSTOMER / CASE INFO ===== -->
         <div class="info-block">
             <div class="info-row">
-                <span class="info-label">Case No:</span>
-                <span class="blade-placeholder">{{ $billing->vehicleCase->case_no ?? 'CASE-00123' }}</span>
-            </div>
-            <div class="info-row">
                 <span class="info-label">Vehicle:</span>
-                <span class="blade-placeholder">{{ $billing->vehicleCase->vehicle_reg_no ?? 'ABC-1234' }}</span>
+                <span class="blade-placeholder">{{ $billing->vehicleCase->vehicle_no ?? 'ABC-1234' }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Make/Year:</span>
                 <span class="blade-placeholder">{{ $billing->vehicleCase->make ?? 'Toyota' }}
-                    {{ $billing->vehicleCase->year ?? '2020' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Work Type:</span>
-                <span class="blade-placeholder">{{ $billing->vehicleCase->work_type ?? 'Repair' }}</span>
+                    {{ $billing->vehicleCase->model ?? '2020' }}</span>
             </div>
             <div class="separator"></div>
             <div class="info-row">
@@ -390,7 +382,7 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Mobile:</span>
-                <span class="blade-placeholder">{{ $billing->vehicleCase->mobile_no ?? '+92-300-1234567' }}</span>
+                <span class="blade-placeholder">{{ $billing->vehicleCase->party_mobile ?? '+92-300-1234567' }}</span>
             </div>
         </div>
 

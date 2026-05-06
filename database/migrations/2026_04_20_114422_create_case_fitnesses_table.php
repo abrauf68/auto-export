@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('case_fitnesses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('vehicle_case_id')->constrained('vehicle_cases')->cascadeOnDelete();
-            $table->string('fitness_from');
-            $table->string('docs')->nullable();
+            $table->enum('type', ['Truck', 'Trailer', 'Others'])->nullable();
+            $table->text('details')->nullable();
             $table->timestamps();
         });
     }

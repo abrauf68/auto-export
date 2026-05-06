@@ -11,19 +11,16 @@ class CaseTransfer extends Model
 
     protected $fillable = [
         'vehicle_case_id',
+
+        // From
         'from_name',
         'from_s_o',
         'from_nic',
-        'from_biometric',
+
+        // To
         'to_name',
         'to_s_o',
         'to_nic',
-        'to_biometric',
-        'engine_no',
-        'chassis_no',
-        'wheels',
-        'weight',
-        'last_tax',
     ];
 
     public function vehicleCase()

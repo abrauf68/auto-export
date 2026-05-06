@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('case_alterations', function (Blueprint $table) {
+        Schema::create('case_file_returns', function (Blueprint $table) {
             $table->id();
             $table->foreignId('vehicle_case_id')->constrained('vehicle_cases')->cascadeOnDelete();
 
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('case_alterations');
+        Schema::dropIfExists('case_file_returns');
     }
 };

@@ -14,12 +14,12 @@
         <!-- Cases List Table -->
         <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between">
-                @canany(['create case'])
+                {{-- @canany(['create case'])
                     <a href="{{route('dashboard.cases.create')}}" class="add-new btn btn-primary waves-effect waves-light">
                         <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span
                             class="d-none d-sm-inline-block">{{ __('Add New Case') }}</span>
                     </a>
-                @endcan
+                @endcan --}}
                 <form method="GET" action="{{ route('dashboard.cases.index') }}">
                     <div class="d-flex gap-2 align-items-center mt-3">
                         <select name="refer_to" class="form-select" onchange="this.form.submit()">
@@ -40,11 +40,10 @@
                     <thead>
                         <tr>
                             <th>{{ __('Sr.') }}</th>
-                            <th>{{ __('Case No') }}</th>
                             <th>{{ __('Reg. No.') }}</th>
-                            <th>{{ __('Submitted By') }}</th>
-                            <th>{{ __('Case Refer To') }}</th>
-                            <th>{{ __('Work Type') }}</th>
+                            <th>{{ __('Party Name') }}</th>
+                            <th>{{ __('City') }}</th>
+                            <th>{{ __('Status') }}</th>
                             @canany(['delete case', 'update case', 'view case'])<th>{{ __('Action') }}</th>@endcan
                         </tr>
                     </thead>
@@ -52,14 +51,16 @@
                         @foreach ($cases as $index => $case)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $case->case_no }}</td>
-                                <td>{{ $case->vehicle_reg_no }}</td>
-                                <td>{{ $case->submitted_by }}</td>
-                                <td>{{ ucfirst($case->case_refer_to) }}</td>
-                                <td>{{ ucfirst($case->work_type) }}</td>
+                                <td>{{ $case->vehicle_no }}</td>
+                                <td>{{ $case->party_name }}</td>
+                                <td>{{ ucfirst($case->city) }}</td>
+                                <td>
+                                    <span
+                                        class="badge me-4 bg-label-{{ $case->status == 'closed' ? 'success' : 'warning' }}">{{ ucfirst($case->status) }}</span>
+                                </td>
                                 @canany(['delete case', 'update case', 'view case'])
                                     <td class="d-flex">
-                                        @canany(['delete case'])
+                                        {{-- @canany(['delete case'])
                                             <form action="{{ route('dashboard.cases.destroy', $case->id) }}" method="POST">
                                                 @method('DELETE')
                                                 @csrf
@@ -70,8 +71,8 @@
                                                     <i class="ti ti-trash ti-md"></i>
                                                 </a>
                                             </form>
-                                        @endcan
-                                        @canany(['update case'])
+                                        @endcan --}}
+                                        {{-- @canany(['update case'])
                                             <span class="text-nowrap">
                                                 <a href="{{ route('dashboard.cases.edit', $case->id) }}"
                                                     class="btn btn-icon btn-text-primary waves-effect waves-light rounded-pill me-1"
@@ -80,7 +81,7 @@
                                                     <i class="ti ti-edit ti-md"></i>
                                                 </a>
                                             </span>
-                                        @endcan
+                                        @endcan --}}
                                         @canany(['view case'])
                                             <span class="text-nowrap">
                                                 <a href="{{ route('dashboard.cases.show', $case->id) }}"

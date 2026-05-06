@@ -3,13 +3,18 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Billing;
+use App\Models\BillingItem;
 use App\Models\VehicleCase;
 use App\Models\CaseTransfer;
 use App\Models\CaseAlteration;
+use App\Models\CaseFileReturn;
 use App\Models\CaseTax;
 use App\Models\CaseInsurance;
 use App\Models\CasePermit;
 use App\Models\CaseFitness;
+use App\Models\CaseOther;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +35,7 @@ class CaseController extends Controller
             $query = VehicleCase::query();
 
             if ($request->filled('refer_to')) {
-                $query->where('case_refer_to', $request->refer_to);
+                $query->where('city', $request->refer_to);
             }
 
             $cases = $query->latest()->get();
@@ -467,17 +472,23 @@ class CaseController extends Controller
 
     public function storeCaseViaApi(Request $request)
     {
-        dd($request->all());
         $validator = Validator::make($request->all(), [
-            'vehicle_reg_no'   => 'required|string|max:50|unique:vehicle_cases',
-            'make'             => 'nullable|string|max:100',
-            'year'             => 'nullable|integer|min:1900|max:2100',
-            'submitted_by'     => 'required|string|max:150',
-            'mobile_no'        => 'required|string|max:20',
-            'submission_date'  => 'required|date',
-            'tentative_return_date' => 'nullable|date|after_or_equal:submission_date|after:today',
-            'case_refer_to'    => 'required|in:Karachi,Lasbella,Quetta,Peshawar,Gilgit,Punjab,Other',
-            'work_type'        => 'required|in:transfer,alteration,tax,insurance,permit,fitness',
+            'common.city'   => 'required|string|max:255',
+            'common.vehicleNo' => 'required|string|max:255',
+            'common.partyName' => 'required|string|max:255',
+            'common.partyMobile' => 'nullable|string|max:255',
+            'common.vehicleMake' => 'nullable|string|max:255',
+            'common.vehicleModel' => 'nullable|string|max:255',
+            'common.engineNo' => 'nullable|string|max:255',
+            'common.chassisNo' => 'nullable|string|max:255',
+            'common.date' => 'required|date',
+            'common.comment' => 'nullable|string',
+            'services' => 'required|array',
+            'totals' => 'required|array',
+            'totals.totalAmount' => 'required|numeric',
+            'totals.receivedAmount' => 'required|numeric',
+            'totals.remainingAmount' => 'required|numeric',
+            'submittedAt' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -486,29 +497,203 @@ class CaseController extends Controller
 
         try {
             DB::beginTransaction();
-            $caseNo = 'CASE-' . now()->format('Y') . '-' . Str::padLeft(VehicleCase::count() + 1, 4, '0');
 
-            // Create Main Vehicle Case
+            // 1. Create the vehicle case
             $vehicleCase = VehicleCase::create([
-                'case_no'               => $caseNo,
-                'vehicle_reg_no'        => $request->vehicle_reg_no,
-                'make'                  => $request->make,
-                'year'                  => $request->year,
-                'submitted_by'          => $request->submitted_by,
-                'mobile_no'             => $request->mobile_no,
-                'submission_date'       => $request->submission_date,
-                'tentative_return_date' => $request->tentative_return_date,
-                'case_refer_to'         => $request->case_refer_to,
-                'work_type'             => $request->work_type,
+                'city' => $request->input('common.city'),
+                'vehicle_no' => $request->input('common.vehicleNo'),
+                'vehicle_make' => $request->input('common.vehicleMake'),
+                'vehicle_model' => $request->input('common.vehicleModel'),
+                'engine_no' => $request->input('common.engineNo'),
+                'chassis_no' => $request->input('common.chassisNo'),
+                'party_name' => $request->input('common.partyName'),
+                'party_mobile' => $request->input('common.partyMobile'),
+                'case_date' => $request->input('common.date'),
+                'comment' => $request->input('common.comment'),
+                'submitted_at' => $request->has('submittedAt')
+                    ? date('Y-m-d H:i:s', strtotime($request->input('submittedAt')))
+                    : now(),
             ]);
+
+            // 2. Create billing record
+            $billing = Billing::create([
+                'vehicle_case_id' => $vehicleCase->id,
+                'billing_type' => 'local',
+                'bill_no' => $this->generateBillNumber(),
+                'total_amount' => $request->input('totals.totalAmount'),
+                'paid_amount' => $request->input('totals.receivedAmount'),
+                'remaining_amount' => $request->input('totals.remainingAmount'),
+                'billing_date' => now(),
+                'billing_name' => $request->input('common.partyName'),
+                'description' => $request->input('common.comment'),
+                'status' => $this->determinePaymentStatus(
+                    $request->input('totals.receivedAmount'),
+                    $request->input('totals.totalAmount')
+                ),
+            ]);
+
+            // 3. Process services and create billing items
+            $services = $request->input('services', []);
+            foreach ($services as $service) {
+                // Create billing item
+                BillingItem::create([
+                    'billing_id' => $billing->id,
+                    'item_name' => $service['serviceType'],
+                    'item_amount' => $service['amount'],
+                ]);
+
+                // Create service-specific records
+                $this->createServiceRecord($vehicleCase->id, $service);
+            }
+
+            // 4. Create payment record if received amount > 0
+            if ($request->input('totals.receivedAmount') > 0) {
+                Payment::create([
+                    'transaction_id' => $this->generateTransactionId(), // Implement this helper method
+                    'billing_id' => $billing->id,
+                    'amount' => $request->input('totals.receivedAmount'),
+                    'payment_date' => now(),
+                    'payment_method' => 'cash', // You might want to get this from request
+                ]);
+            }
 
             DB::commit();
 
-            return response()->json(['success' => "Case #{$caseNo} created successfully!", 'case_id' => $vehicleCase->id]);
+            return response()->json([
+                'success' => "Case created successfully!",
+                'case_id' => $vehicleCase->id,
+                'billing_id' => $billing->id
+            ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('API Case Creation Failed', ['error' => $e->getMessage()]);
+            Log::error('API Case Creation Failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['error' => 'Failed to create case: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Create service-specific record based on service type
+     */
+    private function createServiceRecord($caseId, $service)
+    {
+        $serviceType = strtolower(str_replace(' ', '_', $service['serviceType']));
+        $details = $service['details'];
+
+        switch ($serviceType) {
+            case 'transfer':
+            case 'alteration':
+            case 'file_return':
+                $modelClass = $this->getServiceModelClass($serviceType);
+                if ($modelClass) {
+                    $modelClass::create([
+                        'vehicle_case_id' => $caseId,
+                        'from_name' => $details['fromName'] ?? null,
+                        'from_s_o' => $details['fromSo'] ?? null,
+                        'from_nic' => $details['fromNic'] ?? null,
+                        'to_name' => $details['toName'] ?? null,
+                        'to_s_o' => $details['toSo'] ?? null,
+                        'to_nic' => $details['toNic'] ?? null,
+                    ]);
+                }
+                break;
+
+            case 'route_permit':
+                CasePermit::create([
+                    'vehicle_case_id' => $caseId,
+                    'type' => $details['rtaPta'] ?? 'Others',
+                    'details' => $details['details'] ?? null,
+                ]);
+                break;
+
+            case 'fc':
+                CaseFitness::create([
+                    'vehicle_case_id' => $caseId,
+                    'type' => $details['truckType'] ?? 'Others',
+                    'details' => $details['fcDetails'] ?? null,
+                ]);
+                break;
+
+            case 'insurance':
+                CaseInsurance::create([
+                    'vehicle_case_id' => $caseId,
+                    'details' => $details['remarks'] ?? null,
+                ]);
+                break;
+
+            case 'tax':
+                CaseTax::create([
+                    'vehicle_case_id' => $caseId,
+                    'tax_from' => $details['fromPeriod'] ?? null,
+                    'tax_to' => $details['upto'] ?? null,
+                ]);
+                break;
+
+            case 'others':
+                CaseOther::create([
+                    'vehicle_case_id' => $caseId,
+                    'details' => $details['otherDetails'] ?? null,
+                ]);
+                break;
+        }
+    }
+
+    /**
+     * Get the model class for transfer/alteration/file_return services
+     */
+    private function getServiceModelClass($serviceType)
+    {
+        $models = [
+            'transfer' => CaseTransfer::class,
+            'alteration' => CaseAlteration::class,
+            'file_return' => CaseFileReturn::class,
+        ];
+
+        return $models[$serviceType] ?? null;
+    }
+
+    /**
+     * Generate unique bill number
+     */
+    private function generateBillNumber()
+    {
+        $prefix = 'BILL';
+        $year = date('Y');
+        $month = date('m');
+
+        $lastBill = Billing::whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month)
+                        ->orderBy('id', 'desc')
+                        ->first();
+
+        if ($lastBill && preg_match('/BILL-' . $year . $month . '-(\d+)/', $lastBill->bill_no, $matches)) {
+            $nextNumber = intval($matches[1]) + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        return $prefix . '-' . $year . $month . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Generate unique transaction ID for payment
+     */
+    private function generateTransactionId()
+    {
+        return 'TXN-' . uniqid() . '-' . time();
+    }
+
+    /**
+     * Determine payment status based on paid amount vs total amount
+     */
+    private function determinePaymentStatus($paidAmount, $totalAmount)
+    {
+        if ($paidAmount <= 0) {
+            return 'unpaid';
+        } elseif ($paidAmount >= $totalAmount) {
+            return 'paid';
+        } else {
+            return 'partial';
         }
     }
 }

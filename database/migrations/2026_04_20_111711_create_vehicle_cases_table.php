@@ -13,22 +13,27 @@ return new class extends Migration
     {
         Schema::create('vehicle_cases', function (Blueprint $table) {
             $table->id();
-            $table->string('case_no')->unique();
-            // Step 1
-            $table->string('vehicle_reg_no');
-            $table->string('make')->nullable();
-            $table->year('year')->nullable();
-            $table->string('submitted_by');
-            $table->string('mobile_no');
-            $table->date('submission_date');
-            $table->date('tentative_return_date')->nullable();
 
-            // Step 2
-            $table->string('case_refer_to'); // Karachi, Quetta etc
-            $table->string('work_type'); // Transfer, Tax etc
+            // Common Info
+            $table->string('city')->nullable();
+            $table->string('vehicle_no')->nullable();
+            $table->string('vehicle_make')->nullable();
+            $table->string('vehicle_model')->nullable();
+            $table->string('engine_no')->nullable();
+            $table->string('chassis_no')->nullable();
+
+            // Party Info
+            $table->string('party_name');
+            $table->string('party_mobile');
+
+            // Case Info
+            $table->date('case_date')->nullable();
+            $table->text('comment')->nullable();
+
+            // Tracking
+            $table->timestamp('submitted_at')->nullable();
 
             $table->enum('status', ['open', 'closed'])->default('open');
-
             $table->timestamps();
         });
     }

@@ -11,8 +11,7 @@ class CasePermit extends Model
 
     protected $fillable = [
         'vehicle_case_id',
-        'region',
-        'docs',
-        'expiry_date',
+        'type',
+        'details',
     ];
 }

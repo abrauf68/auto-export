@@ -485,6 +485,13 @@
     }
 
     // =========================================================
+    // CHECK IF ANY TRANSFER-LIKE SERVICE EXISTS
+    // =========================================================
+    function hasTransferLikeService() {
+        return currentServicesRows.some(row => TRANSFER_LIKE.has(row.serviceType));
+    }
+
+    // =========================================================
     // PENDING ITEMS RENDERING
     // =========================================================
     function renderFilteredItems() {
@@ -557,7 +564,14 @@
         if (serviceType === 'Route Permit') return `
             <div class="row g-2">
                 <div class="col-12"><label class="form-label-sm">Route Details</label><textarea class="form-control detail-details" rows="2">${t('details')}</textarea></div>
-                <div class="col-md-6"><label class="form-label-sm">RTA / PTA</label><input class="form-control detail-rtaPta" ${v('rtaPta')}></div>
+                <div class="col-md-6">
+                    <label class="form-label-sm">RTA / PTA</label>
+                    <select class="form-select detail-rtaPta">
+                        <option value="RTA" ${data.rtaPta === 'RTA' ? 'selected' : ''}>RTA</option>
+                        <option value="PTA" ${data.rtaPta === 'PTA' ? 'selected' : ''}>PTA</option>
+                        <option value="Other" ${data.rtaPta === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                </div>
             </div>`;
 
         if (serviceType === 'FC') return `
@@ -602,17 +616,37 @@
         const g = cls => w.querySelector(`.${cls}`)?.value || '';
 
         if (TRANSFER_LIKE.has(st)) {
-            row.detailsData = { fromName:g('detail-fromName'), fromSo:g('detail-fromSo'), fromNic:g('detail-fromNic'), toName:g('detail-toName'), toSo:g('detail-toSo'), toNic:g('detail-toNic') };
+            row.detailsData = {
+                fromName:g('detail-fromName'),
+                fromSo:g('detail-fromSo'),
+                fromNic:g('detail-fromNic'),
+                toName:g('detail-toName'),
+                toSo:g('detail-toSo'),
+                toNic:g('detail-toNic')
+            };
         } else if (st==='Route Permit') {
-            row.detailsData = { details:g('detail-details'), rtaPta:g('detail-rtaPta') };
+            row.detailsData = {
+                details:g('detail-details'),
+                rtaPta:g('detail-rtaPta')
+            };
         } else if (st==='FC') {
-            row.detailsData = { truckType:g('detail-truckType')||'Truck', fcDetails:g('detail-fcDetails') };
+            row.detailsData = {
+                truckType:g('detail-truckType')||'Truck',
+                fcDetails:g('detail-fcDetails')
+            };
         } else if (st==='Insurance') {
-            row.detailsData = { remarks:g('detail-remarks') };
+            row.detailsData = {
+                remarks:g('detail-remarks')
+            };
         } else if (st==='Tax') {
-            row.detailsData = { fromPeriod:g('detail-fromPeriod'), upto:g('detail-upto') };
+            row.detailsData = {
+                fromPeriod:g('detail-fromPeriod'),
+                upto:g('detail-upto')
+            };
         } else if (st==='Others') {
-            row.detailsData = { otherDetails:g('detail-otherDetails') };
+            row.detailsData = {
+                otherDetails:g('detail-otherDetails')
+            };
         }
     }
 
@@ -638,16 +672,20 @@
         const master = getMasterTransferData();
 
         rows.forEach(row => {
-            row.detailsData = { ...master };
-            const section = $(`details-section-${row.id}`);
-            if (!section) return;
-            const w = section.querySelector('.details-fields-wrapper');
-            if (!w) return;
-            const fields = { fromName:'detail-fromName', fromSo:'detail-fromSo', fromNic:'detail-fromNic', toName:'detail-toName', toSo:'detail-toSo', toNic:'detail-toNic' };
-            Object.entries(fields).forEach(([key, cls]) => {
-                const el = w.querySelector('.' + cls);
-                if (el && el !== document.activeElement) el.value = master[key] || '';
-            });
+            // Only update if this row doesn't have data or if we're syncing from another row
+            const hasData = row.detailsData && (row.detailsData.fromName || row.detailsData.fromNic || row.detailsData.toName);
+            if (!hasData || row !== rows[0]) {
+                row.detailsData = { ...master };
+                const section = $(`details-section-${row.id}`);
+                if (!section) return;
+                const w = section.querySelector('.details-fields-wrapper');
+                if (!w) return;
+                const fields = { fromName:'detail-fromName', fromSo:'detail-fromSo', fromNic:'detail-fromNic', toName:'detail-toName', toSo:'detail-toSo', toNic:'detail-toNic' };
+                Object.entries(fields).forEach(([key, cls]) => {
+                    const el = w.querySelector('.' + cls);
+                    if (el && el !== document.activeElement) el.value = master[key] || '';
+                });
+            }
         });
     }
 
@@ -679,7 +717,10 @@
                 el.addEventListener('input', () => {
                     if (isTransfer) {
                         clearTimeout(syncTimeout);
-                        syncTimeout = setTimeout(syncAllTransferRows, 30);
+                        syncTimeout = setTimeout(() => {
+                            syncRowDetailsFromDOM(row.id);
+                            syncAllTransferRows();
+                        }, 30);
                     } else {
                         syncRowDetailsFromDOM(row.id);
                     }
@@ -729,12 +770,33 @@
                 const wasTransfer = TRANSFER_LIKE.has(row.serviceType);
                 const isTransfer  = TRANSFER_LIKE.has(newType);
                 row.serviceType = newType;
-                if (isTransfer && !wasTransfer) {
+
+                // Preserve data if converting between similar types
+                if (isTransfer && wasTransfer) {
+                    // Keep existing transfer data
+                    if (!row.detailsData) {
+                        const master = getMasterTransferData();
+                        row.detailsData = master;
+                    }
+                } else if (isTransfer && !wasTransfer) {
+                    // Converting to transfer - get master data if exists
                     const master = getMasterTransferData();
-                    row.detailsData = (master && (master.fromName || master.fromNic)) ? { ...master } : { fromName:'', fromSo:'', fromNic:'', toName:'', toSo:'', toNic:'' };
+                    row.detailsData = master;
                 } else if (!isTransfer && wasTransfer) {
+                    // Converting from transfer - keep some data if applicable
+                    const oldData = row.detailsData || {};
                     row.detailsData = {};
+                    // Try to map relevant fields
+                    if (newType === 'Route Permit') {
+                        row.detailsData = { details: `From: ${oldData.fromName || ''} To: ${oldData.toName || ''}`, rtaPta: 'RTA' };
+                    } else if (newType === 'FC') {
+                        row.detailsData = { truckType: 'Truck', fcDetails: `Transfer from ${oldData.fromName || ''}` };
+                    }
+                } else {
+                    // Converting between non-transfer services
+                    if (!row.detailsData) row.detailsData = {};
                 }
+
                 readVehicleFields();
                 renderServicesTable();
                 renderDetailSections();
@@ -790,12 +852,14 @@
     // COMMON FIELDS (Vehicle & Party) — show/hide based on service type
     // =========================================================
     function updateCommonFields() {
-        const primary = currentServicesRows[0]?.serviceType || 'Transfer';
-        const isFull  = TRANSFER_LIKE.has(primary);
+        const hasTransfer = hasTransferLikeService();
         const container = $('dynamicCommonFieldsContainer');
         if (!container) return;
 
-        if (isFull) {
+        // Store current values before re-rendering
+        readVehicleFields();
+
+        if (hasTransfer) {
             container.innerHTML = `
                 <div class="col-md-6"><label class="form-label-sm required-dot">Vehicle No</label><input id="comm_vehicleNo" class="form-control"></div>
                 <div class="col-md-6"><label class="form-label-sm">Vehicle Make</label><input id="comm_vehicleMake" class="form-control"></div>
@@ -815,7 +879,16 @@
                 <div class="col-12"><label class="form-label-sm">Comment / Remarks</label><textarea id="comm_comment" rows="2" class="form-control" placeholder="Any additional comment…"></textarea></div>`;
         }
 
+        // Restore values after re-rendering
         writeVehicleFields();
+
+        // Add event listeners to save values on input
+        Object.keys(vehicleState).forEach(k => {
+            const el = $('comm_' + k);
+            if (el) {
+                el.addEventListener('input', () => readVehicleFields());
+            }
+        });
     }
 
     // =========================================================
@@ -828,11 +901,21 @@
 
         if (TRANSFER_LIKE.has(serviceType)) {
             const master = getMasterTransferData();
+            // Always use master data if available, otherwise empty object
             row.detailsData = (master && (master.fromName || master.fromNic || master.toName)) ? { ...master } : { fromName:'', fromSo:'', fromNic:'', toName:'', toSo:'', toNic:'' };
+        } else if (serviceType === 'Route Permit') {
+            row.detailsData = { details: '', rtaPta: 'RTA' };
+        } else if (serviceType === 'FC') {
+            row.detailsData = { truckType: 'Truck', fcDetails: '' };
+        } else if (serviceType === 'Insurance') {
+            row.detailsData = { remarks: '' };
+        } else if (serviceType === 'Tax') {
+            row.detailsData = { fromPeriod: '', upto: '' };
+        } else if (serviceType === 'Others') {
+            row.detailsData = { otherDetails: '' };
         }
 
         currentServicesRows.push(row);
-        syncRowDetailsFromDOM(row.id); // ensure detailsData is populated for the new row
         renderServicesTable();
         renderDetailSections();
         updateCommonFields();
@@ -895,12 +978,29 @@
 
     function initFormWithService(serviceType) {
         currentServicesRows = [];
-        vehicleState.vehicleNo = vehicleState.vehicleMake = vehicleState.vehicleModel = '';
-        vehicleState.engineNo  = vehicleState.chassisNo   = vehicleState.partyName   = '';
-        vehicleState.partyMobile = vehicleState.comment   = '';
+        // Reset vehicle state but preserve any existing values if needed
+        Object.keys(vehicleState).forEach(key => {
+            vehicleState[key] = '';
+        });
         vehicleState.date = '';
 
-        const row = { id: nextId++, serviceType, amount: 0, detailsData: TRANSFER_LIKE.has(serviceType) ? { fromName:'', fromSo:'', fromNic:'', toName:'', toSo:'', toNic:'' } : {} };
+        const row = { id: nextId++, serviceType, amount: 0, detailsData: {} };
+
+        // Initialize details data based on service type
+        if (TRANSFER_LIKE.has(serviceType)) {
+            row.detailsData = { fromName:'', fromSo:'', fromNic:'', toName:'', toSo:'', toNic:'' };
+        } else if (serviceType === 'Route Permit') {
+            row.detailsData = { details: '', rtaPta: 'RTA' };
+        } else if (serviceType === 'FC') {
+            row.detailsData = { truckType: 'Truck', fcDetails: '' };
+        } else if (serviceType === 'Insurance') {
+            row.detailsData = { remarks: '' };
+        } else if (serviceType === 'Tax') {
+            row.detailsData = { fromPeriod: '', upto: '' };
+        } else if (serviceType === 'Others') {
+            row.detailsData = { otherDetails: '' };
+        }
+
         currentServicesRows.push(row);
 
         renderServicesTable();
@@ -924,22 +1024,107 @@
 
     $('addMoreServiceBtn').addEventListener('click', () => {
         readVehicleFields();
-        addServiceRow(currentServicesRows[0]?.serviceType || 'Transfer');
+        // Default to the first service type or Transfer if none exists
+        const defaultService = currentServicesRows[0]?.serviceType || 'Transfer';
+        addServiceRow(defaultService);
     });
 
-    $('finalReceivedAmount').addEventListener('input', updateTotals);
-    $('applyFilterBtn').addEventListener('click', renderFilteredItems);
+        $('finalReceivedAmount').addEventListener('input', updateTotals);
+        $('applyFilterBtn').addEventListener('click', renderFilteredItems);
 
-    $('finalSaveRecordBtn').addEventListener('click', () => {
-        if (!$('comm_vehicleNo')?.value.trim()) { alert('Please fill in the Vehicle Number.'); return; }
+        $('finalSaveRecordBtn').addEventListener('click', async () => {
+        // Validate
+        if (!$('comm_vehicleNo')?.value.trim()) {
+            alert('Please fill in the Vehicle Number.');
+            return;
+        }
+
+        // Collect data
         const data = collectFormData();
-        console.log('Saving:', data);
-        fetch('/api/cases/store', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content },
-            body: JSON.stringify(data)
-        }).then(r => r.json()).then(() => alert('Record saved successfully!')).catch(() => alert('Error saving record. Please try again.'));
+
+        // Log to console for inspection
+        console.log('=== FORM SUBMISSION ===');
+        console.log('Form Data:', data);
+        console.log('Common:', data.common);
+        console.log('Services:', data.services);
+        console.log('Totals:', data.totals);
+
+        // Show loading state
+        const saveBtn = $('finalSaveRecordBtn');
+        const originalHtml = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        saveBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/cases/store', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            // Log response
+            console.log('Server Response:', result);
+            console.log('Response Status:', response.status);
+
+            if (response.ok && result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Record saved successfully!',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    // Reset and go to dashboard
+                    resetAllFormData();
+                    showScreen('screen1Dashboard');
+                    renderFilteredItems();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: result.message || 'Failed to save record'
+                });
+            }
+        } catch (error) {
+            console.error('Submission Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message
+            });
+        } finally {
+            saveBtn.innerHTML = originalHtml;
+            saveBtn.disabled = false;
+        }
     });
+
+    function resetAllFormData() {
+        // Reset all global state
+        currentServicesRows = [];
+        nextId = 1;
+
+        // Reset vehicle state
+        Object.keys(vehicleState).forEach(key => {
+            vehicleState[key] = '';
+        });
+
+        // Clear UI elements
+        const elements = ['finalServicesTableBody', 'dynamicDetailsContainer', 'dynamicCommonFieldsContainer'];
+        elements.forEach(id => {
+            if ($(id)) $(id).innerHTML = '';
+        });
+
+        // Reset total fields
+        if ($('finalTotalAmount')) $('finalTotalAmount').value = '';
+        if ($('finalReceivedAmount')) $('finalReceivedAmount').value = '0';
+        if ($('finalRemainingAmount')) $('finalRemainingAmount').value = '';
+    }
 
     // =========================================================
     // INIT
