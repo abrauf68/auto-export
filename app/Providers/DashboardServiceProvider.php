@@ -6,6 +6,11 @@ use App\Models\VehicleCase;
 use App\Models\CaseTransfer;
 use App\Models\CaseAlteration;
 use App\Models\CasePermit;
+use App\Models\CaseTax;
+use App\Models\CaseInsurance;
+use App\Models\CaseFitness;
+use App\Models\CaseFileReturn;
+use App\Models\CaseOther;
 use App\Models\Billing;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -91,45 +96,70 @@ class DashboardServiceProvider extends ServiceProvider
     /**
      * Get permit status distribution
      */
-    private function getPermitStatusData(): array
-    {
-        $now = Carbon::now();
-
-        $active = CasePermit::where('expiry_date', '>', $now)->count();
-        $expired = CasePermit::where('expiry_date', '<=', $now)->count();
-        $cancelled = 0;
-
-        return [
-            'labels' => ['Active', 'Expired', 'Cancelled'],
-            'data' => [$active, $expired, $cancelled]
-        ];
-    }
-
     /**
-     * Get recent transfers with relations
-     */
-    private function getRecentTransfers($limit = 10)
-    {
-        return CaseTransfer::with(['vehicleCase' => function($query) {
-                $query->select('id', 'case_no', 'vehicle_reg_no', 'status', 'created_at');
-            }])
-            ->latest()
-            ->take($limit)
-            ->get()
-            ->map(function($transfer) {
-                $case = $transfer->vehicleCase;
-                Log::info('Mapping Case: ' . ($case ?? 'N/A'));
-                return [
-                    'id' => $transfer->id,
-                    'case_no' => $case->case_no ?? 'N/A',
-                    'vehicle_reg_no' => $case->vehicle_reg_no ?? 'N/A',
-                    'from_name' => $transfer->from_name,
-                    'to_name' => $transfer->to_name,
-                    'date' => optional($case->created_at)->format('d M Y') ?? 'N/A',
-                    'status' => $case->status,
-                ];
-            });
-    }
+ * Get permit status distribution
+ */
+private function getPermitStatusData(): array
+{
+    $rta = CasePermit::where('type', 'RTA')->count();
+    $pta = CasePermit::where('type', 'PTA')->count();
+    $others = CasePermit::where('type', 'Others')->count();
+
+    return [
+        'labels' => ['RTA', 'PTA', 'Others'],
+        'data' => [$rta, $pta, $others]
+    ];
+}
+
+/**
+ * Get recent transfers with relations
+ */
+private function getRecentTransfers($limit = 10)
+{
+    return CaseTransfer::with(['vehicleCase' => function($query) {
+            $query->select('id', 'vehicle_no', 'status', 'created_at');
+        }])
+        ->latest()
+        ->take($limit)
+        ->get()
+        ->map(function($transfer) {
+            $case = $transfer->vehicleCase;
+            return [
+                'id' => $transfer->id,
+                'case_no' => 'VC-' . str_pad($case->id ?? 0, 5, '0', STR_PAD_LEFT),
+                'vehicle_reg_no' => $case->vehicle_no ?? 'N/A',
+                'from_name' => $transfer->from_name,
+                'to_name' => $transfer->to_name,
+                'date' => optional($transfer->created_at)->format('d M Y') ?? 'N/A',
+                'status' => $case->status ?? 'open',
+            ];
+        });
+}
+
+/**
+ * Get work type distribution
+ */
+private function getWorkTypeDistribution(): array
+{
+    $workTypes = [
+        'Transfers' => CaseTransfer::count(),
+        'Alterations' => CaseAlteration::count(),
+        'Tax' => CaseTax::count(),
+        'Insurance' => CaseInsurance::count(),
+        'Permits' => CasePermit::count(),
+        'Fitness' => CaseFitness::count(),
+        'File Returns' => CaseFileReturn::count(),
+        'Others' => CaseOther::count(),
+    ];
+
+    // Filter out zero values
+    $filtered = array_filter($workTypes);
+
+    return [
+        'labels' => array_keys($filtered),
+        'data' => array_values($filtered)
+    ];
+}
 
     /**
      * Get billing summary
@@ -174,17 +204,17 @@ class DashboardServiceProvider extends ServiceProvider
     /**
      * Get work type distribution
      */
-    private function getWorkTypeDistribution(): array
-    {
-        $workTypes = VehicleCase::select('work_type', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
-            ->groupBy('work_type')
-            ->get();
+    // private function getWorkTypeDistribution(): array
+    // {
+    //     $workTypes = VehicleCase::select('work_type', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+    //         ->groupBy('work_type')
+    //         ->get();
 
-        return [
-            'labels' => $workTypes->pluck('work_type')->toArray(),
-            'data' => $workTypes->pluck('total')->toArray()
-        ];
-    }
+    //     return [
+    //         'labels' => $workTypes->pluck('work_type')->toArray(),
+    //         'data' => $workTypes->pluck('total')->toArray()
+    //     ];
+    // }
 
     /**
      * Get recent cases with all relations
