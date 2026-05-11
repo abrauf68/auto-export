@@ -160,6 +160,45 @@
             margin: 3px 0;
         }
 
+        /* ===== PAYMENT HISTORY ===== */
+        .payment-history {
+            margin: 4px 0;
+        }
+
+        .payment-item {
+            margin: 4px 0;
+            padding: 2px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .payment-date {
+            font-weight: bold;
+            font-size: 9px;
+        }
+
+        .payment-method {
+            font-size: 8px;
+            color: #333;
+            margin-left: 5px;
+        }
+
+        .payment-ref {
+            font-size: 8px;
+            color: #666;
+        }
+
+        .payment-amount {
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .total-paid {
+            margin-top: 5px;
+            padding-top: 3px;
+            border-top: 1px solid #000;
+            font-weight: bold;
+        }
+
         /* ===== QR CODE SECTION ===== */
         .qr-section {
             margin: 8px 0 5px;
@@ -340,16 +379,14 @@
             🖨 Print
         </button>
     </div>
+
     <div class="receipt">
         <!-- ===== HEADER WITH LOGO ===== -->
         <div class="header center">
-            <!-- COMPANY LOGO: Replace src with your logo path -->
             <img src="{{ asset(\App\Helpers\Helper::getLogoLight()) }}" alt="Company Logo" class="logo">
-
             <div class="shop-name">{{ \App\Helpers\Helper::getCompanyName() }}</div>
             <div class="shop-address">{{ \App\Helpers\Helper::getCompanyAddress() }}</div>
             <div class="shop-phone">Ph: {{ \App\Helpers\Helper::getCompanyPhone() ?? '-' }}</div>
-            {{-- <div class="shop-phone">GST: {{ \App\Helpers\Helper::getCompanyGST() ?? '-' }}</div> --}}
 
             <div class="separator"></div>
 
@@ -359,8 +396,7 @@
                 Bill No: <span class="blade-placeholder">{{ $billing->bill_no ?? '00000' }}</span><br>
                 Date: <span class="blade-placeholder">{{ $billing->billing_date ?? date('Y-m-d') }}</span><br>
                 Type: <span class="blade-placeholder">{{ strtoupper($billing->billing_type ?? 'LOCAL') }}</span><br>
-                <span
-                    class="status status-{{ $billing->status ?? 'unpaid' }}">{{ strtoupper($billing->status ?? 'unpaid') }}</span>
+                <span class="status status-{{ $billing->status ?? 'unpaid' }}">{{ strtoupper($billing->status ?? 'unpaid') }}</span>
             </div>
         </div>
 
@@ -398,33 +434,80 @@
             @forelse($billing->items ?? [] as $item)
                 <div class="item-row">
                     <span class="item-name blade-placeholder">{{ Str::limit($item->item_name, 22) }}</span>
-                    <span class="item-amount blade-placeholder">{{ number_format($item->item_amount, 2) }}</span>
+                    <span class="item-amount blade-placeholder">{{ \App\Helpers\Helper::formatCurrency($item->item_amount) }}</span>
                 </div>
             @empty
+                <div class="item-row">
+                    <span class="item-name">No items found</span>
+                    <span class="item-amount">0.00</span>
+                </div>
             @endforelse
         </div>
 
-        <div class="separator"></div>
+        {{-- <div class="separator"></div> --}}
 
         <!-- ===== TOTALS ===== -->
-        <div class="total-row">
+
+        <div class="total-row grand-total">
+            <span>TOTAL:</span>
+            <span class="blade-placeholder">{{ \App\Helpers\Helper::formatCurrency($billing->total_amount) }}</span>
+        </div>
+        {{-- <div class="total-row">
             <span class="total-label">TOTAL:</span>
-            <span class="blade-placeholder">{{ number_format($billing->total_amount ?? 19500.0, 2) }}</span>
+            <span class="blade-placeholder">{{ \App\Helpers\Helper::formatCurrency($billing->total_amount) }}</span>
         </div>
         <div class="total-row">
             <span class="total-label">PAID:</span>
-            <span class="blade-placeholder">{{ number_format($billing->paid_amount ?? 10000.0, 2) }}</span>
-        </div>
+            <span class="blade-placeholder">{{ \App\Helpers\Helper::formatCurrency($billing->paid_amount) }}</span>
+        </div> --}}
+
+        <!-- ===== PAYMENT HISTORY ===== -->
+        @if(isset($payments) && $payments->count() > 0)
+            {{-- <div class="double-separator"></div> --}}
+            <div class="payment-history">
+                <div class="items-header">
+                    <span>PAYMENT HISTORY</span>
+                    <span>AMOUNT (PKR)</span>
+                </div>
+
+                @foreach($payments as $payment)
+                    <div class="payment-item">
+                        <div class="item-row">
+                            <span class="item-name">
+                                <span class="payment-date">{{ $payment->payment_date ? date('d-m-Y', strtotime($payment->payment_date)) : 'Date not set' }}</span>
+                                @if($payment->payment_method)
+                                    <span class="payment-method">({{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }})</span>
+                                @endif
+                            </span>
+                            <span class="payment-amount">{{ \App\Helpers\Helper::formatCurrency($payment->amount) }}</span>
+                        </div>
+                        @if($payment->notes)
+                            <div class="info-row" style="font-size: 8px; margin-top: -2px;">
+                                <span>Note: {{ Str::limit($payment->notes, 30) }}</span>
+                                <span></span>
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+
+                <div class="total-paid">
+                    <div class="total-row">
+                        <span class="total-label">TOTAL PAID:</span>
+                        <span class="blade-placeholder">{{ \App\Helpers\Helper::formatCurrency($payments->sum('amount')) }}</span>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="total-row grand-total">
             <span>BALANCE:</span>
-            <span class="blade-placeholder">{{ number_format($billing->remaining_amount ?? 9500.0, 2) }}</span>
+            <span class="blade-placeholder">{{ \App\Helpers\Helper::formatCurrency($billing->remaining_amount) }}</span>
         </div>
 
         <!-- ===== AMOUNT IN WORDS ===== -->
         <div class="info-row mt-5">
             <span class="info-label">In Words:</span>
-            <span
-                class="blade-placeholder">{{ \App\Helpers\Helper::numberToWords($billing->remaining_amount ?? 0) }}</span>
+            <span class="blade-placeholder">{{ \App\Helpers\Helper::numberToWords($billing->remaining_amount ?? 0) }}</span>
         </div>
 
         <!-- ===== QR CODE FOR VERIFICATION ===== -->
@@ -444,7 +527,7 @@
             <div class="footer-note">* Please retain this receipt for warranty</div>
 
             <div class="signature-line">
-                <div class="signature-box">Customer</div>
+                <div class="signature-box">Customer Signature</div>
                 <div class="signature-box">Authorized Signatory</div>
             </div>
 
@@ -454,13 +537,13 @@
         </div>
     </div>
 
-    <!-- ===== HELPER SCRIPT (Remove in production) ===== -->
     <script>
         // Fallback for QR code if route helper fails in preview
         document.addEventListener('DOMContentLoaded', function() {
             const qrImg = document.querySelector('.qr-code');
             if (qrImg && qrImg.src.includes('billing.verify')) {
                 // QR will auto-generate via API when printed/viewed live
+                console.log('QR code loaded successfully');
             }
         });
     </script>

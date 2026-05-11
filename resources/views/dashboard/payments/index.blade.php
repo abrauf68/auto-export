@@ -27,7 +27,8 @@
                         <tr>
                             <th>{{ __('Sr.') }}</th>
                             <th>{{ __('Bill No') }}</th>
-                            <th>{{ __('TXN ID') }}</th>
+                            <th>{{ __('Vehicle No') }}</th>
+                            <th>{{ __('Party Name') }}</th>
                             <th>{{ __('Amount') }}</th>
                             <th>{{ __('Date') }}</th>
                             <th>{{ __('Method') }}</th>
@@ -39,7 +40,8 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td><a href="{{ route('dashboard.billings.show', $payment->billing->id) }}">{{ $payment->billing->bill_no }}</a></td>
-                                <td>{{ $payment->transaction_id }}</td>
+                                <td>{{ $payment->billing->vehicleCase->vehicle_no ?? 'N/A' }}</td>
+                                <td>{{ $payment->billing->vehicleCase->party_name ?? 'N/A' }}</td>
                                 <td>{{ \App\Helpers\Helper::formatCurrency($payment->amount) }}</td>
                                 <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d M Y') }}</td>
                                 <td>{{ ucfirst($payment->payment_method) }}</td>

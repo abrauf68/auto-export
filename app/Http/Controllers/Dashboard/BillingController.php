@@ -23,7 +23,7 @@ class BillingController extends Controller
         $this->authorize('view billing');
 
         try {
-            $billings = Billing::with('items')->latest()->get();
+            $billings = Billing::with('items', 'vehicleCase')->latest()->get();
             return view('dashboard.billings.index', compact('billings'));
         } catch (\Throwable $th) {
             Log::error("Billing Index Failed:" . $th->getMessage());
@@ -144,7 +144,8 @@ class BillingController extends Controller
         $this->authorize('view billing');
         try {
             $billing = Billing::with('items', 'vehicleCase')->findOrFail($id);
-            return view('dashboard.billings.show', compact('billing'));
+            $payments = Payment::where('billing_id', $billing->id)->get();
+            return view('dashboard.billings.show', compact('billing', 'payments'));
         } catch (\Throwable $th) {
             Log::error("Billing Show Failed:" . $th->getMessage());
             return redirect()->back()->with('error', "Something went wrong! Please try again later");
@@ -294,7 +295,12 @@ class BillingController extends Controller
     {
         try {
             $billing = Billing::with('items', 'vehicleCase')->where('bill_no', $bill_no)->first();
-            return view('frontend.bill', compact('billing'));
+            if (!$billing) {
+                return redirect()->back()->with('error', "Bill not found!");
+            }
+
+            $payments = Payment::where('billing_id', $billing->id)->orderBy('payment_date', 'desc')->get();
+            return view('frontend.bill', compact('billing', 'payments'));
         } catch (\Throwable $th) {
             Log::error("Billing Show Failed:" . $th->getMessage());
             return redirect()->back()->with('error', "Something went wrong! Please try again later");

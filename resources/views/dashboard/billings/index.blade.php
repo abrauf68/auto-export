@@ -26,7 +26,8 @@
                     <thead>
                         <tr>
                             <th>{{ __('Sr.') }}</th>
-                            <th>{{ __('Type') }}</th>
+                            <th>{{ __('Vehicle No') }}</th>
+                            <th>{{ __('Party Name') }}</th>
                             <th>{{ __('Total') }}</th>
                             <th>{{ __('Date') }}</th>
                             <th>{{ __('Status') }}</th>
@@ -37,7 +38,8 @@
                         @foreach ($billings as $index => $billing)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ Str::replaceFirst('_', ' ', $billing->billing_type) }}</td>
+                                <td>{{ $billing->vehicleCase->vehicle_no ?? 'N/A' }}</td>
+                                <td>{{ $billing->vehicleCase->party_name ?? 'N/A' }}</td>
                                 <td>{{ \App\Helpers\Helper::formatCurrency($billing->total_amount) }}</td>
 
                                 <td>{{ \Carbon\Carbon::parse($billing->billing_date)->format('d M Y') }}</td>

@@ -20,7 +20,7 @@ class PaymentController extends Controller
     {
         $this->authorize('view payment');
         try {
-            $payments = Payment::with('billing')->latest()->get();
+            $payments = Payment::with('billing.vehicleCase')->latest()->get();
             return view('dashboard.payments.index', compact('payments'));
         } catch (\Throwable $th) {
             Log::error("Payment Index Failed:" . $th->getMessage());
@@ -35,7 +35,7 @@ class PaymentController extends Controller
     {
         $this->authorize('create payment');
         try {
-            $billings = Billing::where('status', '!=', 'paid')->latest()->get();
+            $billings = Billing::with('vehicleCase')->where('status', '!=', 'paid')->latest()->get();
             return view('dashboard.payments.create', compact('billings'));
         } catch (\Throwable $th) {
             Log::error("Payment Create Failed:" . $th->getMessage());
