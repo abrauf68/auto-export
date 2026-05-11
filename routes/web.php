@@ -130,6 +130,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard/stats', [HomeController::class, 'dashboardStatsIndex'])->name('dashboard.stats');
         Route::get('/dashboard/refresh', [HomeController::class, 'refreshData'])->name('dashboard.refresh');
 
+        Route::get('/dashboard/pending-items', [HomeController::class, 'getPendingItems'])->name('dashboard.pending-items');
+
         // Admin Dashboard Authentication Routes
         Route::prefix('dashboard')->name('dashboard.')->group(function () {
             Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -231,4 +233,3 @@ Route::middleware(['auth'])->group(function () {
         return "Optimization cache cleared!";
     })->name('clear.optimize');
 });
-

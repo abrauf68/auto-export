@@ -429,19 +429,28 @@
     // =========================================================
     // MOCK DATA
     // =========================================================
-    const pendingPaymentsDB = [
-        { city:'Karachi',  service:'Transfer',    party:'Al-Rehman',      vehicle:'ABC-789',  amount:12500 },
-        { city:'Quetta',   service:'Route Permit', party:'Northern Cargo', vehicle:'LE-123',   amount:8200  },
-        { city:'Peshawar', service:'FC',           party:'Jan Traders',    vehicle:'TB-4567',  amount:5750  },
-        { city:'Punjab',   service:'Tax',          party:'Zahid Ent.',     vehicle:'LEB-909',  amount:3500  },
-        { city:'Gilgit',   service:'Insurance',    party:'Northern Travels',vehicle:'GIL-111', amount:6200  }
-    ];
-    const pendingCasesDB = [
-        { city:'Karachi',  service:'File Return',  title:'NIC mismatch',       desc:'Documents pending'     },
-        { city:'Punjab',   service:'File Return',  title:'Tax period overdue',  desc:'Submit within 3 days'  },
-        { city:'Gilgit',   service:'Insurance',    title:'Policy expired',      desc:'Renewal required'      },
-        { city:'Lasbella', service:'Route Permit', title:'Permit renewal',      desc:'RTA approval'          }
-    ];
+    // Global variables that will be updated dynamically
+let pendingPaymentsDB = [];
+let pendingCasesDB = [];
+
+// Function to fetch latest pending items from server
+async function fetchPendingItems() {
+    try {
+        const response = await fetch('/dashboard/pending-items');
+        const data = await response.json();
+        
+        pendingPaymentsDB = data.payments;
+        pendingCasesDB = data.cases;
+        
+        // Re-render the filtered items with new data
+        renderFilteredItems();
+        
+        return { payments: pendingPaymentsDB, cases: pendingCasesDB };
+    } catch (error) {
+        console.error('Failed to fetch pending items:', error);
+        return { payments: [], cases: [] };
+    }
+}
 
     // =========================================================
     // STATE
@@ -1030,79 +1039,93 @@
     });
 
         $('finalReceivedAmount').addEventListener('input', updateTotals);
-        $('applyFilterBtn').addEventListener('click', renderFilteredItems);
+        $('applyFilterBtn').addEventListener('click', async () => {
+            // Fetch fresh data before filtering
+            await fetchPendingItems();
+            renderFilteredItems();
+        });
+
+
 
         $('finalSaveRecordBtn').addEventListener('click', async () => {
-        // Validate
-        if (!$('comm_vehicleNo')?.value.trim()) {
-            alert('Please fill in the Vehicle Number.');
-            return;
-        }
+            // Validate
+            if (!$('comm_vehicleNo')?.value.trim()) {
+                alert('Please fill in the Vehicle Number.');
+                return;
+            }
 
-        // Collect data
-        const data = collectFormData();
+            // Collect data
+            const data = collectFormData();
 
-        // Log to console for inspection
-        console.log('=== FORM SUBMISSION ===');
-        console.log('Form Data:', data);
-        console.log('Common:', data.common);
-        console.log('Services:', data.services);
-        console.log('Totals:', data.totals);
+            // Log to console for inspection
+            console.log('=== FORM SUBMISSION ===');
+            console.log('Form Data:', data);
+            console.log('Common:', data.common);
+            console.log('Services:', data.services);
+            console.log('Totals:', data.totals);
 
-        // Show loading state
-        const saveBtn = $('finalSaveRecordBtn');
-        const originalHtml = saveBtn.innerHTML;
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-        saveBtn.disabled = true;
+            // Show loading state
+            const saveBtn = $('finalSaveRecordBtn');
+            const originalHtml = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            saveBtn.disabled = true;
 
-        try {
-            const response = await fetch('/api/cases/store', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            // Log response
-            console.log('Server Response:', result);
-            console.log('Response Status:', response.status);
-
-            if (response.ok && result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Record saved successfully!',
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    // Reset and go to dashboard
-                    resetAllFormData();
-                    showScreen('screen1Dashboard');
-                    renderFilteredItems();
+            try {
+                const response = await fetch('/api/cases/store', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                    },
+                    body: JSON.stringify(data)
                 });
-            } else {
+
+                const result = await response.json();
+
+                // Log response
+                console.log('Server Response:', result);
+                console.log('Response Status:', response.status);
+
+                if (response.ok && result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Record saved successfully!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Reset and go to dashboard
+                        resetAllFormData();
+                        showScreen('screen1Dashboard');
+                        
+                        // Refresh pending items from server
+                        fetchPendingItems().then(() => {
+                            // Also refresh the city pending cases if we're on a specific city
+                            if (currentCity) {
+                                loadCityPendingCases(currentCity);
+                            }
+                        });
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: result.message || 'Failed to save record'
+                    });
+                }
+            } catch (error) {
+                console.error('Submission Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: result.message || 'Failed to save record'
+                    text: error.message
                 });
+            } finally {
+                saveBtn.innerHTML = originalHtml;
+                saveBtn.disabled = false;
             }
-        } catch (error) {
-            console.error('Submission Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: error.message
-            });
-        } finally {
-            saveBtn.innerHTML = originalHtml;
-            saveBtn.disabled = false;
-        }
-    });
+        });
+
 
     function resetAllFormData() {
         // Reset all global state
@@ -1129,7 +1152,10 @@
     // =========================================================
     // INIT
     // =========================================================
-    renderFilteredItems();
+    // Load initial data from server
+    fetchPendingItems().then(() => {
+        renderFilteredItems();
+    });
 
 })();
 </script>
