@@ -6,6 +6,51 @@
     <li class="breadcrumb-item active">Case #{{ $case->id }}</li>
 @endsection
 
+@section('css')
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 20px;
+    }
+
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .timeline-item-marker {
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 60px;
+        text-align: center;
+    }
+
+    .timeline-item-marker-indicator {
+        width: 32px;
+        height: 32px;
+        margin: 0 auto;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .timeline-item-marker-indicator i {
+        font-size: 16px;
+    }
+
+    .timeline-item-content {
+        padding-left: 20px;
+        border-left: 2px solid #e9ecef;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="card mb-4">
@@ -385,6 +430,101 @@
                     </div>
                 @endif
 
+            </div>
+
+            {{-- Activities Section --}}
+            <div class="row mb-5 mt-5">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                        <h6 class="text-primary mb-0">
+                            <i class="ti ti-activity me-2"></i> Recent Activities
+                        </h6>
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                            <i class="ti ti-plus me-1"></i> Add Activity
+                        </button>
+                    </div>
+
+                    {{-- Activities Timeline --}}
+                    <div class="timeline">
+                        @if($caseActivities && $caseActivities->count() > 0)
+                            @foreach($caseActivities as $activity)
+                                <div class="timeline-item mb-3">
+                                    <div class="timeline-item-marker">
+                                        <div class="timeline-item-marker-indicator bg-label-primary">
+                                            <i class="ti ti-activity"></i>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item-content">
+                                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
+                                            <div>
+                                                <span class="badge bg-primary me-2">{{ $activity->activity_type }}</span>
+                                                <small class="text-muted">
+                                                    <i class="ti ti-calendar me-1"></i>
+                                                    {{ $activity->created_at->format('d M, Y h:i A') }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        @if($activity->description)
+                                            <p class="mb-0 text-dark">{{ $activity->description }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="text-center text-muted py-4">
+                                <i class="ti ti-info-circle me-1"></i>
+                                No activities recorded yet. Click "Add Activity" to get started.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Add Activity Modal --}}
+            <div class="modal fade" id="addActivityModal" tabindex="-1" aria-labelledby="addActivityModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addActivityModalLabel">
+                                <i class="ti ti-activity me-2"></i> Add New Activity
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="addActivityForm" action="{{ route('dashboard.cases.activities.store', $case->id) }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="case_id" value="{{ $case->id }}">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="activity_type" class="form-label required">Activity Type</label>
+                                    <input type="text"
+                                        class="form-control"
+                                        id="activity_type"
+                                        name="activity_type"
+                                        placeholder="e.g., Document Submitted, Status Update, Meeting Scheduled"
+                                        required>
+                                    <div class="invalid-feedback" id="activity_type_error"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control"
+                                            id="description"
+                                            name="description"
+                                            rows="4"
+                                            placeholder="Enter detailed description of the activity..."></textarea>
+                                    <div class="invalid-feedback" id="description_error"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="ti ti-x me-1"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="submitActivityBtn">
+                                    <i class="ti ti-check me-1"></i> Add Activity
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 

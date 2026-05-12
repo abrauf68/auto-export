@@ -430,27 +430,27 @@
     // MOCK DATA
     // =========================================================
     // Global variables that will be updated dynamically
-let pendingPaymentsDB = [];
-let pendingCasesDB = [];
+    let pendingPaymentsDB = [];
+    let pendingCasesDB = [];
 
-// Function to fetch latest pending items from server
-async function fetchPendingItems() {
-    try {
-        const response = await fetch('/dashboard/pending-items');
-        const data = await response.json();
-        
-        pendingPaymentsDB = data.payments;
-        pendingCasesDB = data.cases;
-        
-        // Re-render the filtered items with new data
-        renderFilteredItems();
-        
-        return { payments: pendingPaymentsDB, cases: pendingCasesDB };
-    } catch (error) {
-        console.error('Failed to fetch pending items:', error);
-        return { payments: [], cases: [] };
+    // Function to fetch latest pending items from server
+    async function fetchPendingItems() {
+        try {
+            const response = await fetch('/dashboard/pending-items');
+            const data = await response.json();
+
+            pendingPaymentsDB = data.payments;
+            pendingCasesDB = data.cases;
+
+            // Re-render the filtered items with new data
+            renderFilteredItems();
+
+            return { payments: pendingPaymentsDB, cases: pendingCasesDB };
+        } catch (error) {
+            console.error('Failed to fetch pending items:', error);
+            return { payments: [], cases: [] };
+        }
     }
-}
 
     // =========================================================
     // STATE
@@ -499,6 +499,8 @@ async function fetchPendingItems() {
     function hasTransferLikeService() {
         return currentServicesRows.some(row => TRANSFER_LIKE.has(row.serviceType));
     }
+    const caseRoute = "{{ route('dashboard.cases.show', ':id') }}";
+    const billingRoute = "{{ route('dashboard.billings.show', ':id') }}";
 
     // =========================================================
     // PENDING ITEMS RENDERING
@@ -514,24 +516,30 @@ async function fetchPendingItems() {
 
         $('filteredPaymentsList').innerHTML = payments.length
             ? payments.map(p => `
-                <div class="pending-payment-item">
-                    <div>
-                        <span class="fw-semibold" style="font-size:0.82rem;">${esc(p.city)} — ${esc(p.service)}</span><br>
-                        <span class="text-secondary" style="font-size:0.75rem;">${esc(p.party)} &bull; ${esc(p.vehicle)}</span>
+                <a href="${billingRoute.replace(':id', p.billing_id)}" class="text-decoration-none">
+                    <div class="pending-payment-item">
+                        <div>
+                            <span class="fw-semibold" style="font-size:0.82rem;">${esc(p.city)} — ${esc(p.service)}</span><br>
+                            <span class="text-secondary" style="font-size:0.75rem;">${esc(p.party)} &bull; ${esc(p.vehicle)}</span>
+                        </div>
+                        <span class="fw-bold text-danger" style="font-size:0.85rem;">₨ ${p.amount.toLocaleString()}</span>
                     </div>
-                    <span class="fw-bold text-danger" style="font-size:0.85rem;">₨ ${p.amount.toLocaleString()}</span>
-                </div>`).join('')
+                </a>`).join('')
             : '<div class="empty-state"><i class="fas fa-check-circle"></i>No pending payments</div>';
 
         $('filteredCasesList').innerHTML = cases.length
             ? cases.map(c => `
+            <a href="${caseRoute.replace(':id', c.case_id)}" class="text-decoration-none">
                 <div class="pending-case-item">
                     <i class="fas fa-folder-open mt-1" style="color:var(--warning);font-size:0.85rem;"></i>
                     <div>
                         <span class="fw-semibold" style="font-size:0.82rem;">${esc(c.city)} — ${esc(c.service)}</span><br>
+                        <span class="fw-semibold" style="font-size:0.82rem;">${esc(c.vehicle_no)} — ${esc(c.party_name)}</span><br>
                         <span class="text-secondary" style="font-size:0.75rem;">${esc(c.title)} · ${esc(c.desc)}</span>
                     </div>
-                </div>`).join('')
+                </div>
+            </a>
+            `).join('')
             : '<div class="empty-state"><i class="fas fa-check-circle"></i>No pending cases</div>';
     }
 
@@ -542,13 +550,16 @@ async function fetchPendingItems() {
         const filtered = pendingCasesDB.filter(c => normalizeCity(c.city) === city);
         $('cityPendingCasesList').innerHTML = filtered.length
             ? filtered.map(c => `
-                <div class="pending-case-item">
-                    <i class="fas fa-exclamation-circle mt-1" style="color:var(--warning);"></i>
-                    <div>
-                        <span class="fw-semibold">${esc(c.service)} — ${esc(c.title)}</span><br>
-                        <span class="text-secondary">${esc(c.desc)}</span>
+                <a href="${caseRoute.replace(':id', c.case_id)}" class="text-decoration-none">
+                    <div class="pending-case-item">
+                        <i class="fas fa-exclamation-circle mt-1" style="color:var(--warning);"></i>
+                        <div>
+                            <span class="fw-semibold">${esc(c.service)} — ${esc(c.title)}</span><br>
+                            <span class="fw-semibold">${esc(c.vehicle_no)} — ${esc(c.party_name)}</span><br>
+                            <span class="text-secondary">${esc(c.desc)}</span>
+                        </div>
                     </div>
-                </div>`).join('')
+                </a>`).join('')
             : '<div class="empty-state"><i class="fas fa-check-circle"></i>No pending cases for this city</div>';
         $('pendingCityName').textContent = city;
     }
@@ -1097,7 +1108,7 @@ async function fetchPendingItems() {
                         // Reset and go to dashboard
                         resetAllFormData();
                         showScreen('screen1Dashboard');
-                        
+
                         // Refresh pending items from server
                         fetchPendingItems().then(() => {
                             // Also refresh the city pending cases if we're on a specific city

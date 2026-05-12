@@ -76,4 +76,9 @@ class VehicleCase extends Model
     {
         return $this->hasOne(Billing::class, 'vehicle_case_id');
     }
+
+    public function activities()
+    {
+        return $this->hasMany(CaseActivity::class, 'case_id');
+    }
 }

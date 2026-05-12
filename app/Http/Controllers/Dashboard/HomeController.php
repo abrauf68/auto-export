@@ -30,8 +30,9 @@ class HomeController extends Controller
             ->get()
             ->map(function ($billing) {
                 $serviceName = $billing->items->first()->item_name ?? 'Unknown';
-                
+
                 return (object)[
+                    'billing_id' => $billing->id,
                     'city' => $billing->vehicleCase->city ?? 'N/A',
                     'service' => $serviceName,
                     'party' => $billing->vehicleCase->party_name ?? 'N/A',
@@ -40,7 +41,7 @@ class HomeController extends Controller
                     'created_at' => $billing->created_at
                 ];
             });
-        
+
         // Get pending cases from vehicle_cases table
         $pendingCases = VehicleCase::with(['transfer', 'alteration', 'permit', 'tax', 'insurance', 'fileReturn', 'other'])
             ->where('status', 'open')
@@ -51,7 +52,7 @@ class HomeController extends Controller
                 $serviceType = 'Unknown';
                 $title = 'Pending';
                 $description = 'Awaiting processing';
-                
+
                 if ($case->transfer) {
                     $serviceType = 'Transfer';
                     $title = 'Transfer Pending';
@@ -81,16 +82,19 @@ class HomeController extends Controller
                     $title = 'Other Work Pending';
                     $description = $case->other->details ?? 'Additional work required';
                 }
-                
+
                 return (object)[
+                    'case_id' => $case->id,
                     'city' => $case->city ?? 'N/A',
+                    'vehicle_no' => $case->vehicle_no ?? 'N/A',
+                    'party_name' => $case->party_name ?? 'N/A',
                     'service' => $serviceType,
                     'title' => $title,
                     'desc' => $description,
                     'created_at' => $case->created_at // Include timestamp for reference
                 ];
             });
-        
+
         return view('dashboard.index', compact('pendingPayments', 'pendingCases'));
     }
 
@@ -107,8 +111,9 @@ class HomeController extends Controller
             ->get()
             ->map(function ($billing) {
                 $serviceName = $billing->items->first()->item_name ?? 'Unknown';
-                
+
                 return [
+                    'billing_id' => $billing->id,
                     'city' => $billing->vehicleCase->city ?? 'N/A',
                     'service' => $serviceName,
                     'party' => $billing->vehicleCase->party_name ?? 'N/A',
@@ -117,7 +122,7 @@ class HomeController extends Controller
                     'created_at' => $billing->created_at->format('Y-m-d H:i:s') // Include formatted timestamp
                 ];
             });
-        
+
         // Get pending cases
         $pendingCases = VehicleCase::with(['transfer', 'alteration', 'permit', 'tax', 'insurance', 'fileReturn', 'other'])
             ->where('status', 'open')
@@ -127,7 +132,7 @@ class HomeController extends Controller
                 $serviceType = 'Unknown';
                 $title = 'Pending';
                 $description = 'Awaiting processing';
-                
+
                 if ($case->transfer) {
                     $serviceType = 'Transfer';
                     $title = 'Transfer Pending';
@@ -157,16 +162,19 @@ class HomeController extends Controller
                     $title = 'Other Work Pending';
                     $description = $case->other->details ?? 'Additional work required';
                 }
-                
+
                 return [
+                    'case_id' => $case->id,
                     'city' => $case->city ?? 'N/A',
+                    'vehicle_no' => $case->vehicle_no ?? 'N/A',
+                    'party_name' => $case->party_name ?? 'N/A',
                     'service' => $serviceType,
                     'title' => $title,
                     'desc' => $description,
                     'created_at' => $case->created_at->format('Y-m-d H:i:s') // Include formatted timestamp
                 ];
             });
-        
+
         return response()->json([
             'payments' => $pendingPayments,
             'cases' => $pendingCases
@@ -190,10 +198,10 @@ class HomeController extends Controller
     {
         $type = $request->get('type');
         $data = $this->getRefreshData($type);
-        
+
         return response()->json($data);
     }
-    
+
     /**
      * Get refresh data based on type
      */
@@ -226,7 +234,7 @@ class HomeController extends Controller
                 return ['error' => 'Invalid type'];
         }
     }
-    
+
     /**
      * Get transfer chart data for last X months
      */
@@ -234,22 +242,22 @@ class HomeController extends Controller
     {
         $labels = [];
         $data = [];
-        
+
         for ($i = $months - 1; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $labels[] = $date->format('M');
-            
+
             $count = CaseTransfer::whereHas('vehicleCase', function($query) use ($date) {
                 $query->whereYear('created_at', $date->year)
                       ->whereMonth('created_at', $date->month);
             })->count();
-            
+
             $data[] = $count;
         }
-        
+
         return ['labels' => $labels, 'data' => $data];
     }
-    
+
     /**
      * Get permit status distribution
      */
@@ -258,13 +266,13 @@ class HomeController extends Controller
         $rta = CasePermit::where('type', 'RTA')->count();
         $pta = CasePermit::where('type', 'PTA')->count();
         $others = CasePermit::where('type', 'Others')->count();
-        
+
         return [
             'labels' => ['RTA', 'PTA', 'Others'],
             'data' => [$rta, $pta, $others]
         ];
     }
-    
+
     /**
      * Get recent transfers
      */
@@ -288,10 +296,10 @@ class HomeController extends Controller
                 'status' => $case->status ?? 'open',
             ];
         });
-        
+
         return $transfers;
     }
-    
+
     /**
      * Get monthly revenue for chart
      */
@@ -299,24 +307,24 @@ class HomeController extends Controller
     {
         $labels = [];
         $data = [];
-        
+
         for ($i = $months - 1; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $labels[] = $date->format('M Y');
-            
+
             $revenue = Billing::whereYear('billing_date', $date->year)
                 ->whereMonth('billing_date', $date->month)
                 ->sum('paid_amount');
-            
+
             $data[] = $revenue;
         }
-        
+
         return [
             'labels' => $labels,
             'data' => $data
         ];
     }
-    
+
     /**
      * Get work type distribution
      */
@@ -331,10 +339,10 @@ class HomeController extends Controller
             'File Returns' => CaseFileReturn::count(),
             'Others' => CaseOther::count(),
         ];
-        
+
         // Filter out zero values
         $filtered = array_filter($workTypes);
-        
+
         return [
             'labels' => array_keys($filtered),
             'data' => array_values($filtered)

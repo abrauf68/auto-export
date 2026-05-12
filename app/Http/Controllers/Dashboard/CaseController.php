@@ -16,6 +16,7 @@ use App\Models\CaseFitness;
 use App\Models\CaseOther;
 use App\Models\Payment;
 use App\Models\User;
+use App\Models\CaseActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -348,7 +349,8 @@ class CaseController extends Controller
         $this->authorize('view case');
         try {
             $case = VehicleCase::with('transfer', 'alteration', 'tax', 'insurance', 'permit', 'fitness', 'fileReturn', 'other')->findOrFail($id);
-            return view('dashboard.cases.show', compact('case'));
+            $caseActivities = $case->activities()->latest()->get();
+            return view('dashboard.cases.show', compact('case', 'caseActivities'));
         } catch (\Throwable $th) {
             // throw $th;
             Log::error("Case Show Failed:" . $th->getMessage());
@@ -694,6 +696,33 @@ class CaseController extends Controller
             return 'paid';
         } else {
             return 'partial';
+        }
+    }
+
+    public function storeActivity(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'case_id' => 'required|exists:vehicle_cases,id',
+            'activity_type' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        try {
+            $activity = CaseActivity::create([
+                'case_id' => $request->input('case_id'),
+                'activity_type' => $request->input('activity_type'),
+                'description' => $request->input('description'),
+            ]);
+
+            return redirect()->route('dashboard.cases.show', $request->input('case_id'))
+                ->with('success', 'Activity logged successfully!');
+        } catch (\Exception $e) {
+            Log::error('Store Activity Failed', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to log activity: ' . $e->getMessage());
         }
     }
 }
