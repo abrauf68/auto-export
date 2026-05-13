@@ -500,7 +500,7 @@
         return currentServicesRows.some(row => TRANSFER_LIKE.has(row.serviceType));
     }
     const caseRoute = "{{ route('dashboard.cases.show', ':id') }}";
-    const billingRoute = "{{ route('dashboard.billings.show', ':id') }}";
+    const billingRoute = "{{ route('dashboard.payments.create') }}";
 
     // =========================================================
     // PENDING ITEMS RENDERING
@@ -516,7 +516,7 @@
 
         $('filteredPaymentsList').innerHTML = payments.length
             ? payments.map(p => `
-                <a href="${billingRoute.replace(':id', p.billing_id)}" class="text-decoration-none">
+                <a href="${billingRoute}?billing_id=${p.billing_id}" class="text-decoration-none">
                     <div class="pending-payment-item">
                         <div>
                             <span class="fw-semibold" style="font-size:0.82rem;">${esc(p.city)} — ${esc(p.service)}</span><br>

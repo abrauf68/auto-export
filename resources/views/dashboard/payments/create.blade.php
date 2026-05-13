@@ -20,6 +20,9 @@
 
                     <div class="row p-5">
                         <h3>{{ __('Add New Payment') }}</h3>
+                        @php
+                            $selectedBilling = request('billing_id');
+                        @endphp
                         <div class="mb-4 col-md-12">
                             <label for="billing_id" class="form-label">{{ __('Billing') }}</label><span
                                 class="text-danger">*</span>
@@ -27,7 +30,7 @@
                                 id="billing_id" required>
                                 <option value="" selected disabled>Select Billing</option>
                                 @foreach ($billings as $bill)
-                                    <option value="{{ $bill->id }}" data-remaining="{{ $bill->remaining_amount }}">
+                                    <option value="{{ $bill->id }}" data-remaining="{{ $bill->remaining_amount }}" {{ $selectedBilling == $bill->id ? 'selected' : '' }}>
                                         {{ $bill->vehicleCase->vehicle_no }} - {{ $bill->vehicleCase->party_name }} - ({{ $bill->bill_no }})
                                     </option>
                                 @endforeach
@@ -216,12 +219,21 @@
     <script>
         $(document).ready(function() {
 
-            $('#billing_id').on('change', function() {
-                let remaining = $(this).find(':selected').data('remaining');
+            function updateAmounts() {
+                let remaining = $('#billing_id').find(':selected').data('remaining');
 
                 $('#remaining_amount').val(remaining);
                 $('#amount').val(remaining);
+            }
+
+            $('#billing_id').on('change', function() {
+                updateAmounts();
             });
+
+            // page load par selected billing ka amount show karne ke liye
+            if ($('#billing_id').val()) {
+                updateAmounts();
+            }
 
         });
     </script>
